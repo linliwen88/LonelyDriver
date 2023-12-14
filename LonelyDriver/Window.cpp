@@ -3,8 +3,11 @@
 #include <iostream>
 
 
-int Window::InternalInit(int width, int height)
+int Window::InternalInit(const int width, const int height)
 {
+    GetInstance()->m_width = width;
+    GetInstance()->m_height = height;
+
     // Intialize and configure glfw
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -26,9 +29,14 @@ int Window::InternalInit(int width, int height)
     glfwSetScrollCallback(m_window, Window::scroll_callback);
 }
 
-void Window::InternalTerminate()
+bool Window::InternalShouldClose() const
 {
+    return glfwWindowShouldClose(m_window);
+}
 
+void Window::InternalSwapBuffers() const
+{
+    glfwSwapBuffers(m_window);
 }
 
 void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -70,9 +78,4 @@ void Window::mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     // camera.ProcessMouseScroll(static_cast<float>(yoffset));
-}
-
-
-Window::Window()
-{
 }

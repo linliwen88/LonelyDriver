@@ -10,10 +10,11 @@ public:
 	void Run();
 
 private:
-	void InitOpenGL();
+	int InitOpenGL();
 	void LoadAssets();
+	void ProcessInput(GLFWwindow* window);
 
-	Window* glfwWindow;
+	Window* window;
 
 	int SCR_WIDTH;
 	int SCR_HEIGHT;

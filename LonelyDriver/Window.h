@@ -13,14 +13,18 @@ public:
 		static Window* instancePtr;
 		return instancePtr;
 	}
-
-	static int Init(int width, int height) { return GetInstance()->InternalInit(width, height); }
-	static int Terminate() { GetInstance()->InternalTerminate(); }
+	
+	static int	Init(const int width, const int height)	{ return GetInstance()->InternalInit(width, height); }
+	static bool ShouldClose()							{ return GetInstance()->InternalShouldClose(); }
+	static void PollEvents()							{ glfwPollEvents(); }
+	static void SwapBuffers()							{ GetInstance()->InternalSwapBuffers(); }
+	static int	Terminate()								{ glfwTerminate(); }
 
 private:
 	Window();
-	int  InternalInit(int width, int height);
-	void InternalTerminate();
+	int  InternalInit(const int width, const int height);
+	bool InternalShouldClose() const;
+	void InternalSwapBuffers() const;
 
 	static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 	static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
