@@ -1,85 +1,85 @@
 #include "Window.h"
+
+#ifndef _INCLUDE_GLAD_
+#define _INCLUDE_GLAD_
+#include <glad/glad.h> // for glViewport()
+#endif
+
 #include "Camera.h"
 #include <iostream>
 
-Window* Window::instancePtr = nullptr;
+GLFWwindow* Window::m_window    = nullptr;
+std::string Window::TITLE      = "";
+int         Window::SCR_WIDTH   = 800;
+int         Window::SCR_HEIGHT  = 600;
+float       Window::lastX       = SCR_WIDTH / 2.0f;
+float       Window::lastY       = SCR_HEIGHT / 2.0f;
+bool        Window::firstMouse  = true;
 
-Window* Window::GetInstance()
+int Window::Init(const int width, const int height, const std::string& title)
 {
-    if (instancePtr == nullptr)
+    SCR_WIDTH = width;
+    SCR_HEIGHT = height;
+    TITLE = title;
+
+    if (m_window == nullptr)
     {
-        instancePtr = new Window();
+        // register error callback for troubleshooting 
+        glfwSetErrorCallback(Window::error_callback);
+
+        // Intialize and configure glfw
+        if (glfwInit() == GLFW_FALSE)
+        {
+            std::cout << "Failed to init glfw" << std::endl;
+            return -1;
+        }
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        // glfw window creation
+        m_window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, TITLE.c_str(), NULL, NULL);
+
+        if (m_window == NULL)
+        {
+            std::cout << "Failed to create GLFW window" << std::endl;
+            glfwTerminate();
+            return -1;
+        }
+
+        glfwMakeContextCurrent(m_window);
+
+        glfwSetFramebufferSizeCallback(m_window, Window::framebuffer_size_callback);
+        glfwSetCursorPosCallback(m_window, Window::mouse_callback);
+        glfwSetScrollCallback(m_window, Window::scroll_callback);
     }
-    return instancePtr;
-}
-
-int Window::InternalInit(const int width, const int height)
-{
-    // PrintName();
-    GetInstance()->m_width = width;
-    GetInstance()->m_height = height;
-
-    // Intialize and configure glfw
-    if (glfwInit() == GLFW_FALSE)
-    {
-        std::cout << "Failed to init glfw" << std::endl;
-        return -1;
-    }
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    // glfw window creation
-    m_window = glfwCreateWindow(width, height, "Lonely Driver", NULL, NULL);
-
-    if (m_window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(m_window);
-
-    glfwSetFramebufferSizeCallback(m_window, Window::framebuffer_size_callback);
-    glfwSetCursorPosCallback(m_window, Window::mouse_callback);
-    glfwSetScrollCallback(m_window, Window::scroll_callback);
 
     return 0;
 }
 
-void Window::InternalProcessInput(GLFWwindow* window, Camera* camera, float deltaTime)
+void Window::ProcessInput(Camera* camera, float deltaTime)
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(m_window, true);
+    if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
         camera->ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    if (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS)
         camera->ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    if (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS)
         camera->ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS)
         camera->ProcessKeyboard(RIGHT, deltaTime);
-}
-
-bool Window::InternalShouldClose() const
-{
-    return glfwWindowShouldClose(m_window);
-}
-
-void Window::InternalSwapBuffers() const
-{
-    glfwSwapBuffers(m_window);
 }
 
 void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    GetInstance()->m_width  = width;
-    GetInstance()->m_height = height;
-    GetInstance()->lastX    = width / 2.f;
-    GetInstance()->lastY    = height / 2.f;
+    SCR_WIDTH  = width;
+    SCR_HEIGHT = height;
+    lastX    = width / 2.f;
+    lastY    = height / 2.f;
 
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 }
 
 
@@ -90,18 +90,18 @@ void Window::mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
 
-    if (GetInstance()->firstMouse)
+    if (firstMouse)
     {
-        GetInstance()->lastX = xpos;
-        GetInstance()->lastY = ypos;
-        GetInstance()->firstMouse = false;
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
     }
 
-    float xoffset = xpos - GetInstance()->lastX;
-    float yoffset = GetInstance()->lastY - ypos; // reversed since y-coordinates go from bottom to top
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
 
-    GetInstance()->lastX = xpos;
-    GetInstance()->lastY = ypos;
+    lastX = xpos;
+    lastY = ypos;
 
     // camera.ProcessMouseMovement(xoffset, yoffset);
 }
@@ -111,4 +111,11 @@ void Window::mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     // camera.ProcessMouseScroll(static_cast<float>(yoffset));
+}
+
+void Window::error_callback(int error, const char* msg)
+{
+    std::string s;
+    s = " [" + std::to_string(error) + "] " + msg + '\n';
+    std::cerr << s << std::endl;
 }

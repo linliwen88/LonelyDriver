@@ -1,6 +1,9 @@
 #include "App.h"
 
+#ifndef _INCLUDE_GLAD_
+#define _INCLUDE_GLAD_
 #include <glad/glad.h>
+#endif
 // #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -10,29 +13,34 @@
 #include "Camera.h"
 #include "Window.h"
 
-App::App()
+App::App(const int width, const int height, const std::string& title) : SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title)
 {
 	// create GLFW window
-    window = Window::GetInstance();
-    window->Init(SCR_WIDTH, SCR_HEIGHT);
-
+    Window::Init(SCR_WIDTH, SCR_HEIGHT, TITLE);
     if (InitOpenGL() == 0)
     {
         Run();
     }
 }
 
+App::~App()
+{
+    delete camera;
+    delete objectShader;
+    delete lightSourceShader;
+}
+
 void App::Run()
 {
     // render loop
     glEnable(GL_DEPTH_TEST);
-    while (!window->ShouldClose())
+    while (!Window::ShouldClose())
     {
         // per-frame logic
         UpdateDeltaTime();
 
         // input
-        window->ProcessInput(camera, deltaTime);
+        Window::ProcessInput(camera, deltaTime);
 
         // rendering commands
         glClearColor(0.3f, 0.4f, 0.4f, 1.0f);
@@ -58,8 +66,8 @@ void App::Run()
 
         // mvp matrices
         const float radius = 10.0f;
-        float camX = sin(window->GetTime()) * radius;
-        float camZ = cos(window->GetTime()) * radius;
+        float camX = sin(Window::GetTime()) * radius;
+        float camZ = cos(Window::GetTime()) * radius;
         glm::mat4 view = camera->GetViewMatrix();
 
         glm::mat4 projection;
@@ -95,10 +103,10 @@ void App::Run()
         glBindVertexArray(0);
 
         // check all events and swap the buffers
-        window->PollEvents();
-        window->SwapBuffers();
+        Window::PollEvents();
+        Window::SwapBuffers();
     }
-    window->Terminate();
+    Window::Terminate();
 }
 
 int App::InitOpenGL()
@@ -184,6 +192,7 @@ int App::InitOpenGL()
 
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
+    camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
     // bind vertex array object
     glGenVertexArrays(1, &VAO);
@@ -259,12 +268,11 @@ int App::InitOpenGL()
     lightSourceShader = new Shader("shaders/lightSource_vshader.glsl", "shaders/lightSource_fshader.glsl");
     return 0;
 
-    camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 }
 
 void App::UpdateDeltaTime()
 {
-    float currentFrame = glfwGetTime();
+    float currentFrame = Window::GetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 }

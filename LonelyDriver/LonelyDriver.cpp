@@ -1,22 +1,12 @@
-// RayTracing.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
-//#include <iostream>
-//#include <glad/glad.h>
-//#include <glm/glm.hpp>
-//#include <glm/gtc/matrix_transform.hpp>
-//#include <glm/gtc/type_ptr.hpp>
-//#include "stb_image.h"
-
 #include "App.h"
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const std::string  TITLE      = "Lonely Driver";
+const unsigned int SCR_WIDTH  = 1280;
+const unsigned int SCR_HEIGHT = 720;
 
 int main()
 {
-    static App* LonelyDriver = new App();
-
+    static App* LonelyDriver = new App(SCR_WIDTH, SCR_HEIGHT, TITLE);
     return 0;
 }
