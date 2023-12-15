@@ -1,18 +1,20 @@
+#include "App.h"
+
 #include <glad/glad.h>
-#include <glm/glm.hpp>
+// #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "stb_image.h"
 
 #include "Shader.h"
-
-#include "App.h"
+#include "Camera.h"
 #include "Window.h"
 
 App::App()
 {
 	// create GLFW window
     window = Window::GetInstance();
+    window->Init(SCR_WIDTH, SCR_HEIGHT);
 
     if (InitOpenGL() == 0)
     {
@@ -27,12 +29,10 @@ void App::Run()
     while (!window->ShouldClose())
     {
         // per-frame logic
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+        UpdateDeltaTime();
 
         // input
-        processInput(window);
+        window->ProcessInput(camera, deltaTime);
 
         // rendering commands
         glClearColor(0.3f, 0.4f, 0.4f, 1.0f);
@@ -49,23 +49,24 @@ void App::Run()
 
         glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec3 objecrColor = glm::vec3(1.0f, 0.5f, 0.31f);
-        objectShader.use();
-        objectShader.setVec3("lightPosition", lightPosition);
-        objectShader.setVec3("lightColor", lightColor);
-        objectShader.setVec3("objectColor", objecrColor);
-        objectShader.setVec3("viewPosition", camera.Position);
+
+        objectShader->use();
+        objectShader->setVec3("lightPosition", lightPosition);
+        objectShader->setVec3("lightColor", lightColor);
+        objectShader->setVec3("objectColor", objecrColor);
+        objectShader->setVec3("viewPosition", camera->Position);
 
         // mvp matrices
         const float radius = 10.0f;
-        float camX = sin(glfwGetTime()) * radius;
-        float camZ = cos(glfwGetTime()) * radius;
-        glm::mat4 view = camera.GetViewMatrix();
+        float camX = sin(window->GetTime()) * radius;
+        float camZ = cos(window->GetTime()) * radius;
+        glm::mat4 view = camera->GetViewMatrix();
 
         glm::mat4 projection;
         projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
-        objectShader.setMat4("view", view);
-        objectShader.setMat4("projection", projection);
+        objectShader->setMat4("view", view);
+        objectShader->setMat4("projection", projection);
 
         //// multiple cubes
         //for (int i = 0; i < 10; i++) {
@@ -79,16 +80,16 @@ void App::Run()
 
         // single cube
         glm::mat4 model = glm::mat4(1.0f);
-        objectShader.setMat4("model", model);
+        objectShader->setMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glBindVertexArray(lightVAO);
-        lightSourceShader.use();
+        lightSourceShader->use();
         model = glm::translate(model, lightPosition);
         model = glm::scale(model, glm::vec3(0.2f));
-        lightSourceShader.setMat4("model", model);
-        lightSourceShader.setMat4("view", view);
-        lightSourceShader.setMat4("projection", projection);
+        lightSourceShader->setMat4("model", model);
+        lightSourceShader->setMat4("view", view);
+        lightSourceShader->setMat4("projection", projection);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glBindVertexArray(0);
@@ -97,11 +98,83 @@ void App::Run()
         window->PollEvents();
         window->SwapBuffers();
     }
-    glfwTerminate();
+    window->Terminate();
 }
 
 int App::InitOpenGL()
 {
+    // traingle vertices
+    float vertices[] = {
+        // position         // color          // texture coords
+        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom left
+        -0.5f, 0.5f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // bottom right
+        0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f, 1.0f, 0.0f, // top left
+        0.5f, 0.5f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f, 1.0f // top right
+    };
+
+    float cubeVertices[] = {
+        // position           // normal vectors
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+    };
+
+    unsigned int indicies[] = {
+        0, 1, 2,
+        1, 2, 3
+    };
+
+    glm::vec3 cubePositions[] = {
+        glm::vec3(0.0f,  0.0f,  0.0f),
+        glm::vec3(2.0f,  5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3(2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f,  3.0f, -7.5f),
+        glm::vec3(1.3f, -2.0f, -2.5f),
+        glm::vec3(1.5f,  2.0f, -2.5f),
+        glm::vec3(1.5f,  0.2f, -1.5f),
+        glm::vec3(-1.3f,  1.0f, -1.5f)
+    };
+
     // glad: load all OpenGL function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -113,12 +186,10 @@ int App::InitOpenGL()
 
 
     // bind vertex array object
-    unsigned int VAO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
     // vertex buffer object
-    unsigned int VBO;
     glGenBuffers(1, &VBO); // generating buffer ID
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
@@ -130,8 +201,8 @@ int App::InitOpenGL()
     glEnableVertexAttribArray(1);
 
     // shaders
-    Shader objectShader("shaders/object_vshader.glsl", "shaders/object_fshader.glsl");
-    objectShader.use();
+    objectShader = new Shader("shaders/object_vshader.glsl", "shaders/object_fshader.glsl");
+    objectShader->use();
 
     // load and generate texture
     unsigned int textures[2];
@@ -177,7 +248,6 @@ int App::InitOpenGL()
     stbi_image_free(data);
 
     // light source VAO
-    unsigned int lightVAO;
     glGenVertexArrays(1, &lightVAO);
     glBindVertexArray(lightVAO);
 
@@ -186,22 +256,16 @@ int App::InitOpenGL()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    Shader lightSourceShader("shaders/lightSource_vshader.glsl", "shaders/lightSource_fshader.glsl");
-
+    lightSourceShader = new Shader("shaders/lightSource_vshader.glsl", "shaders/lightSource_fshader.glsl");
     return 0;
+
+    camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
 }
 
-void ProcessInput(GLFWwindow* window)
+void App::UpdateDeltaTime()
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
+    float currentFrame = glfwGetTime();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
 }
+

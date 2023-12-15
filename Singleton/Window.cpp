@@ -1,29 +1,16 @@
 #include "Window.h"
-#include "Camera.h"
 #include <iostream>
 
-Window* Window::instancePtr = nullptr;
+Window::instance = NULL;
 
-Window* Window::GetInstance()
+Window::Window(int width = 800, int height = 600) : 
+    m_window(nullptr), m_width(width), m_height(height), lastX(width / 2.0f), lastY(height / 2.0f), firstMouse(true)
 {
-    if (instancePtr == nullptr)
-    {
-        instancePtr = new Window();
-    }
-    return instancePtr;
-}
-
-int Window::InternalInit(const int width, const int height)
-{
-    // PrintName();
-    GetInstance()->m_width = width;
-    GetInstance()->m_height = height;
-
     // Intialize and configure glfw
     if (glfwInit() == GLFW_FALSE)
     {
         std::cout << "Failed to init glfw" << std::endl;
-        return -1;
+        return;
     }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -37,49 +24,23 @@ int Window::InternalInit(const int width, const int height)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
-        return -1;
+        return;
     }
+
     glfwMakeContextCurrent(m_window);
 
     glfwSetFramebufferSizeCallback(m_window, Window::framebuffer_size_callback);
     glfwSetCursorPosCallback(m_window, Window::mouse_callback);
     glfwSetScrollCallback(m_window, Window::scroll_callback);
 
-    return 0;
-}
-
-void Window::InternalProcessInput(GLFWwindow* window, Camera* camera, float deltaTime)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera->ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera->ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera->ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera->ProcessKeyboard(RIGHT, deltaTime);
-}
-
-bool Window::InternalShouldClose() const
-{
-    return glfwWindowShouldClose(m_window);
-}
-
-void Window::InternalSwapBuffers() const
-{
-    glfwSwapBuffers(m_window);
 }
 
 void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    GetInstance()->m_width  = width;
-    GetInstance()->m_height = height;
-    GetInstance()->lastX    = width / 2.f;
-    GetInstance()->lastY    = height / 2.f;
-
-    glViewport(0, 0, width, height);
+    m_width = width;
+    m_height = height;
+    GetInstance()->lastX = width / 2.f;
+    GetInstance()->lastY = height / 2.f;
 }
 
 
@@ -90,7 +51,7 @@ void Window::mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
 
-    if (GetInstance()->firstMouse)
+    if (firstMouse)
     {
         GetInstance()->lastX = xpos;
         GetInstance()->lastY = ypos;
