@@ -21,9 +21,10 @@ public:
 	static void		PollEvents()	{		 glfwPollEvents(); }
 	static bool		ShouldClose()	{ return glfwWindowShouldClose(m_window); }
 	static void		SwapBuffers()	{		 glfwSwapBuffers(m_window); }
+	static void		RegisterCamera(Camera* _camera) { camera = _camera; }
 
 	static int	Init(const int width, const int height, const std::string& name);
-	static void ProcessInput(Camera* camera, float deltaTime);
+	static void ProcessInput(float deltaTime);
 
 private:
 	Window() {}
@@ -42,4 +43,5 @@ private:
 	static float		lastX;
 	static float		lastY;
 	static bool			firstMouse;
+	static Camera*		camera;
 };

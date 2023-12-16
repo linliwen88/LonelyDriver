@@ -3,8 +3,15 @@
 // -------------------------------------------------------------
 #pragma once
 
+#ifndef _INCLUDE_GLAD_
+#define _INCLUDE_GLAD_
 #include <glad/glad.h>
+#endif
+
+#ifndef __INCLUDE_GLM_HPP__
+#define __INCLUDE_GLM_HPP__
 #include <glm/glm.hpp>
+#endif
 
 #include <string>
 #include <fstream>

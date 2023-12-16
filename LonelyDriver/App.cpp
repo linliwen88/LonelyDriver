@@ -4,7 +4,11 @@
 #define _INCLUDE_GLAD_
 #include <glad/glad.h>
 #endif
-// #include <glm/glm.hpp>
+
+#ifndef __INCLUDE_GLM_HPP__
+#define __INCLUDE_GLM_HPP__
+#include <glm/glm.hpp>
+#endif
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "stb_image.h"
@@ -13,10 +17,16 @@
 #include "Camera.h"
 #include "Window.h"
 
-App::App(const int width, const int height, const std::string& title) : SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title)
+App::App(const int width, const int height, const std::string& title) :
+    SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title), deltaTime(0.0f), lastFrame(0.0f),
+    camera(nullptr), lightPosition(glm::vec3(1.2f, 1.0f, 2.0f)),
+    objectShader(nullptr), lightSourceShader(nullptr),
+    VAO(-1), VBO(-1), lightVAO(-1)
 {
 	// create GLFW window
     Window::Init(SCR_WIDTH, SCR_HEIGHT, TITLE);
+
+    // Init OpenGL and run
     if (InitOpenGL() == 0)
     {
         Run();
@@ -28,85 +38,6 @@ App::~App()
     delete camera;
     delete objectShader;
     delete lightSourceShader;
-}
-
-void App::Run()
-{
-    // render loop
-    glEnable(GL_DEPTH_TEST);
-    while (!Window::ShouldClose())
-    {
-        // per-frame logic
-        UpdateDeltaTime();
-
-        // input
-        Window::ProcessInput(camera, deltaTime);
-
-        // rendering commands
-        glClearColor(0.3f, 0.4f, 0.4f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glBindVertexArray(VAO);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-        // set color and textures
-        /*glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textures[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, textures[1]);*/
-
-        glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-        glm::vec3 objecrColor = glm::vec3(1.0f, 0.5f, 0.31f);
-
-        objectShader->use();
-        objectShader->setVec3("lightPosition", lightPosition);
-        objectShader->setVec3("lightColor", lightColor);
-        objectShader->setVec3("objectColor", objecrColor);
-        objectShader->setVec3("viewPosition", camera->Position);
-
-        // mvp matrices
-        const float radius = 10.0f;
-        float camX = sin(Window::GetTime()) * radius;
-        float camZ = cos(Window::GetTime()) * radius;
-        glm::mat4 view = camera->GetViewMatrix();
-
-        glm::mat4 projection;
-        projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-
-        objectShader->setMat4("view", view);
-        objectShader->setMat4("projection", projection);
-
-        //// multiple cubes
-        //for (int i = 0; i < 10; i++) {
-        //    glm::mat4 model = glm::mat4(1.0f);
-        //    model = glm::translate(model, cubePositions[i]);
-        //    float angle = 20.0f * i;
-        //    model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-        //    objectShader.setMat4("model", model);
-        //    glDrawArrays(GL_TRIANGLES, 0, 36);
-        //}
-
-        // single cube
-        glm::mat4 model = glm::mat4(1.0f);
-        objectShader->setMat4("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        glBindVertexArray(lightVAO);
-        lightSourceShader->use();
-        model = glm::translate(model, lightPosition);
-        model = glm::scale(model, glm::vec3(0.2f));
-        lightSourceShader->setMat4("model", model);
-        lightSourceShader->setMat4("view", view);
-        lightSourceShader->setMat4("projection", projection);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        glBindVertexArray(0);
-
-        // check all events and swap the buffers
-        Window::PollEvents();
-        Window::SwapBuffers();
-    }
-    Window::Terminate();
 }
 
 int App::InitOpenGL()
@@ -193,6 +124,7 @@ int App::InitOpenGL()
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
     camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
+    Window::RegisterCamera(camera);
 
     // bind vertex array object
     glGenVertexArrays(1, &VAO);
@@ -268,6 +200,85 @@ int App::InitOpenGL()
     lightSourceShader = new Shader("shaders/lightSource_vshader.glsl", "shaders/lightSource_fshader.glsl");
     return 0;
 
+}
+
+void App::Run()
+{
+    // render loop
+    glEnable(GL_DEPTH_TEST);
+    while (!Window::ShouldClose())
+    {
+        // per-frame logic
+        UpdateDeltaTime();
+
+        // input
+        Window::ProcessInput(deltaTime);
+
+        // rendering commands
+        glClearColor(0.3f, 0.4f, 0.4f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glBindVertexArray(VAO);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        //// set color and textures
+        //glActiveTexture(GL_TEXTURE0);
+        //glBindTexture(GL_TEXTURE_2D, textures[0]);
+        //glActiveTexture(GL_TEXTURE1);
+        //glBindTexture(GL_TEXTURE_2D, textures[1]);
+
+        glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+        glm::vec3 objecrColor = glm::vec3(1.0f, 0.5f, 0.31f);
+
+        objectShader->use();
+        objectShader->setVec3("lightPosition", lightPosition);
+        objectShader->setVec3("lightColor", lightColor);
+        objectShader->setVec3("objectColor", objecrColor);
+        objectShader->setVec3("viewPosition", camera->Position);
+
+        // mvp matrices
+        const float radius = 10.0f;
+        float camX = sin(Window::GetTime()) * radius;
+        float camZ = cos(Window::GetTime()) * radius;
+        glm::mat4 view = camera->GetViewMatrix();
+
+        glm::mat4 projection;
+        projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
+        objectShader->setMat4("view", view);
+        objectShader->setMat4("projection", projection);
+
+        //// multiple cubes
+        //for (int i = 0; i < 10; i++) {
+        //    glm::mat4 model = glm::mat4(1.0f);
+        //    model = glm::translate(model, cubePositions[i]);
+        //    float angle = 20.0f * i;
+        //    model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+        //    objectShader.setMat4("model", model);
+        //    glDrawArrays(GL_TRIANGLES, 0, 36);
+        //}
+
+        // single cube
+        glm::mat4 model = glm::mat4(1.0f);
+        objectShader->setMat4("model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        glBindVertexArray(lightVAO);
+        lightSourceShader->use();
+        model = glm::translate(model, lightPosition);
+        model = glm::scale(model, glm::vec3(0.2f));
+        lightSourceShader->setMat4("model", model);
+        lightSourceShader->setMat4("view", view);
+        lightSourceShader->setMat4("projection", projection);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        glBindVertexArray(0);
+
+        // check all events and swap the buffers
+        Window::PollEvents();
+        Window::SwapBuffers();
+    }
+    Window::Terminate();
 }
 
 void App::UpdateDeltaTime()

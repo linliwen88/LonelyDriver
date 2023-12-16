@@ -1,5 +1,8 @@
 #pragma once
+#ifndef __INCLUDE_GLM_HPP__
+#define __INCLUDE_GLM_HPP__
 #include <glm/glm.hpp>
+#endif
 #include <string>
 class Camera;
 class Shader;
@@ -22,14 +25,14 @@ private:
 	std::string TITLE;
 
 	// movement speed
-	float deltaTime = 0.0f; // time between current frame and last frame
-	float lastFrame = 0.0f; // time of last frame
+	float deltaTime; // time between current frame and last frame
+	float lastFrame; // time of last frame
 
 	// camera
 	Camera* camera;
 
 	// lighting
-	glm::vec3 lightPosition = glm::vec3(1.2f, 1.0f, 2.0f);
+	glm::vec3 lightPosition;
 	
 	Shader* objectShader;
 	Shader* lightSourceShader;

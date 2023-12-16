@@ -15,6 +15,7 @@ int         Window::SCR_HEIGHT  = 600;
 float       Window::lastX       = SCR_WIDTH / 2.0f;
 float       Window::lastY       = SCR_HEIGHT / 2.0f;
 bool        Window::firstMouse  = true;
+Camera*     Window::camera      = nullptr;
 
 int Window::Init(const int width, const int height, const std::string& title)
 {
@@ -58,7 +59,7 @@ int Window::Init(const int width, const int height, const std::string& title)
     return 0;
 }
 
-void Window::ProcessInput(Camera* camera, float deltaTime)
+void Window::ProcessInput(float deltaTime)
 {
     if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(m_window, true);
@@ -103,14 +104,14 @@ void Window::mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     lastX = xpos;
     lastY = ypos;
 
-    // camera.ProcessMouseMovement(xoffset, yoffset);
+    camera->ProcessMouseMovement(xoffset, yoffset);
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
 void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    // camera.ProcessMouseScroll(static_cast<float>(yoffset));
+    camera->ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
 void Window::error_callback(int error, const char* msg)
