@@ -6,6 +6,7 @@
 #include <string>
 class Camera;
 class Shader;
+class Model;
 
 class App
 {
@@ -36,6 +37,9 @@ private:
 	
 	Shader* objectShader;
 	Shader* lightSourceShader;
+	Shader* modelShader;
+
+	Model* carModel;
 
 	unsigned int VAO;
 	unsigned int VBO;

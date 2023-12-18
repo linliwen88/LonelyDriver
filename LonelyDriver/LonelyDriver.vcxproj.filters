@@ -76,5 +76,11 @@
     <None Include="shaders\object_vshader.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="shaders\model_load_fshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\model_load_vshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

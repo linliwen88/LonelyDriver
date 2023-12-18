@@ -9,6 +9,8 @@
 #include "Mesh.h"
 class Shader;
 
+unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma = false);
+
 class Model
 {
 public:
@@ -20,6 +22,7 @@ public:
 private:
 	std::vector<Mesh> meshes;
 	std::string directory;
+	std::vector<Texture> textures_loaded;
 
 	void LoadModel(std::string path);
 	void ProcessNode(aiNode* node, const aiScene* scene);
