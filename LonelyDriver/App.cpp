@@ -31,6 +31,7 @@ App::App(const int width, const int height, const std::string& title) :
     // Init OpenGL and run
     if (InitOpenGL() == 0)
     {
+        std::cout << "Init openGL succeeded, running" << std::endl;
         Run();
     }
 }
@@ -230,6 +231,7 @@ int App::InitOpenGL()
     carModel = new Model(modelPath.data());
     std::cout << "Model Loaded" << std::endl;
 
+    return 0;
 }
 
 void App::Run()
@@ -328,6 +330,7 @@ void App::Run()
         Window::PollEvents();
         Window::SwapBuffers();
     }
+    std::cout << "Closing window" << std::endl;
     Window::Terminate();
 }
 
