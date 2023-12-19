@@ -18,6 +18,8 @@ public:
 
 private:
 	int InitOpenGL();
+	void LoadShaders();
+	void LoadModels();
 	void UpdateDeltaTime();
 
 	// application informations
@@ -31,17 +33,8 @@ private:
 
 	// camera
 	Camera* camera;
-
-	// lighting
-	glm::vec3 lightPosition;
 	
-	Shader* objectShader;
-	Shader* lightSourceShader;
 	Shader* modelShader;
 
 	Model* carModel;
-
-	unsigned int VAO;
-	unsigned int VBO;
-	unsigned int lightVAO;
 };
