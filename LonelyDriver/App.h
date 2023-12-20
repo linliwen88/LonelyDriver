@@ -8,6 +8,7 @@ class Camera;
 class Shader;
 class Model;
 class Cube;
+class Plane;
 
 class App
 {
@@ -36,11 +37,12 @@ private:
 
 	// light
 	glm::vec3 lightPosition;
+	Cube* lightCube;
 	Shader* lightShader;
 
-	// model
+	// models
 	Model* carModel;
 	Shader* modelShader;
 
-	Cube* lightCube;
+	Plane* road;
 };

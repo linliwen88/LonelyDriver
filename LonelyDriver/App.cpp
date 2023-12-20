@@ -27,14 +27,15 @@
 #include "Window.h"
 #include "Model.h"
 #include "Cube.h"
+#include "Plane.h"
 #include <iostream>
 
 App::App(const int width, const int height, const std::string& title) :
     SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title), deltaTime(0.0f), lastFrame(0.0f),
     camera(nullptr),
-    lightPosition(glm::vec3(1.0)), lightShader(nullptr),
+    lightPosition(glm::vec3(1.0)), lightCube(nullptr), lightShader(nullptr),
     carModel(nullptr), modelShader(nullptr),
-    lightCube(nullptr)
+    road(nullptr)
 {
 	// create GLFW window
     Window::Init(SCR_WIDTH, SCR_HEIGHT, TITLE);
@@ -70,6 +71,8 @@ int App::InitOpenGL()
 
     lightCube = new Cube();
     lightShader = new Shader("shaders/lightSource_vshader.glsl", "shaders/lightSource_fshader.glsl");
+
+    road = new Plane();
 
     // configure global opengl state
     // -----------------------------
@@ -118,13 +121,12 @@ void App::Run()
         glm::mat4 view = camera->GetViewMatrix();
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+        model = glm::scale(model, glm::vec3(5.0f, 1.0f, 300.0f));	// it's a bit too big for our scene, so scale it down
 
         modelShader->setMat4("projection", projection);
         modelShader->setMat4("view", view);
         modelShader->setMat4("model", model);
         
-        modelShader->setVec3("lightAmbient", lightAmbient);
         modelShader->setVec3("lightAmbient", lightAmbient);
         modelShader->setVec3("lightDiffuse", lightDiffuse);
         modelShader->setVec3("lightSpecular", lightSpecular);
@@ -133,9 +135,15 @@ void App::Run()
         modelShader->setVec3("lightPosition", lightPosition);
         modelShader->setVec3("viewPos", camera->Position);
 
+        // render plane
+        road->Draw(*modelShader);
 
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
 
         // render the loaded model
+        modelShader->setMat4("model", model);
         carModel->Draw(*modelShader);
 
         lightShader->use();
@@ -144,9 +152,9 @@ void App::Run()
         lightShader->setMat4("model", model);
         lightShader->setMat4("view", view);
         lightShader->setMat4("projection", projection);
+
+        // render light source
         lightCube->Draw(*lightShader);
-
-
 
         // check all events and swap the buffers
         Window::PollEvents();
