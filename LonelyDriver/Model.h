@@ -6,20 +6,25 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include "Drawable.h";
 #include "Mesh.h"
 class Shader;
 
 unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma = false);
 
-class Model
+class Model : public Drawable
 {
 public:
 	Model(char* path)
 	{
 		LoadModel(path);
 	}
-	void Draw(Shader& shader);
+
+	~Model() {}
+
+	void Draw(Shader& shader) override;
 private:
+	int texture_processed = 0;
 	std::vector<Mesh> meshes;
 	std::string directory;
 	std::vector<Texture> textures_loaded;
@@ -29,6 +34,4 @@ private:
 	Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
 
 	std::vector<Texture> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
-
-
 };

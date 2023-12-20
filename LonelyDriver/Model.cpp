@@ -28,6 +28,9 @@ void Model::LoadModel(const std::string& path)
 	directory = path.substr(0, path.find_last_of('/'));
 
 	// process ASSIMP's root node recursively
+	std::cout << "scence number of meshes: " << scene->mNumMeshes << std::endl;
+	std::cout << "scence number of materials: " << scene->mNumMaterials << std::endl;
+	texture_processed = 0;
 	ProcessNode(scene->mRootNode, scene);
 }
 
@@ -45,6 +48,7 @@ void Model::ProcessNode(aiNode* node, const aiScene* scene)
 	{
 		ProcessNode(node->mChildren[i], scene);
 	}
+
 }
 
 Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
@@ -119,6 +123,8 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType 
 	std::vector<Texture> textures;
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 	{
+
+		texture_processed++;
 		aiString str;
 		mat->GetTexture(type, i, &str);
 
