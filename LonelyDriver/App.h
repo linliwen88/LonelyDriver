@@ -7,6 +7,7 @@
 class Camera;
 class Shader;
 class Model;
+class Cube;
 
 class App
 {
@@ -18,7 +19,6 @@ public:
 
 private:
 	int InitOpenGL();
-	void LoadShaders();
 	void LoadModels();
 	void UpdateDeltaTime();
 
@@ -33,8 +33,14 @@ private:
 
 	// camera
 	Camera* camera;
-	
+
+	// light
+	glm::vec3 lightPosition;
+	Shader* lightShader;
+
+	// model
+	Model* carModel;
 	Shader* modelShader;
 
-	Model* carModel;
+	Cube* lightCube;
 };
