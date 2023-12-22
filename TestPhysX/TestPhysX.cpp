@@ -6,20 +6,16 @@
 
 #ifdef __SNIPPET_HELLO__
 extern int snippetHelloWorldMain();
-#endif
-
-#ifndef __SNIPPET_HELLO__
+#else
 extern int snippetVehicleMain(int argc, const char* const* argv);
-#endif // __SNIPPET_VEHICLE__
+#endif
 
 
 int main(int argc, const char* const* argv)
 {
 #ifdef __SNIPPET_HELLO__
     return snippetHelloWorldMain();
-#endif // __SNIPPET_HELLO__
-
-#ifndef __SNIPPET_HELLO__
+#else
     return snippetVehicleMain(argc, argv);
-#endif // __SNIPPET_VEHICLE__
+#endif // __SNIPPET_HELLO__
 }
