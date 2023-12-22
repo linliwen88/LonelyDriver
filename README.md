@@ -7,8 +7,7 @@
 <img src="./pics/progress_20231219.png" width="400" />
 
 - 12/21/2023: Successfully run PhysX snippet (Hello world and Vehicle drive)
-<img src="./pics/progress_20231221_1.png" width="200" />
-<img src="./pics/progress_20231221_2.png" width="200" />
+<img src="./pics/progress_20231221_1.png" width="200" /><img src="./pics/progress_20231221_2.png" width="200" />
 
 ### TODOs
 - change pointers to smart pointers
