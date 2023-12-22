@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\HelloWorld">
+      <UniqueIdentifier>{7419ccf5-013e-44b8-99ac-0ff250059132}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Vehicle">
+      <UniqueIdentifier>{6fa7c915-898c-4643-985a-0ab52f363d43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\SnippetRender">
+      <UniqueIdentifier>{63ee4cb0-348b-43af-889a-ce31be02cd01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\SnippetCommon">
+      <UniqueIdentifier>{3513cf3b-1d72-4c56-ab92-cd39cec8afd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\SnippetUtils">
+      <UniqueIdentifier>{23521ff6-aac3-46d7-b808-38b809c9c16d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\SnippetVehicle2Common">
+      <UniqueIdentifier>{8d2963b2-3cdb-4dc2-aecf-2e7416a136d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\SnippetVehicle2Common\serialization">
+      <UniqueIdentifier>{4a7f4d45-cfd3-456f-bbfc-31d661dc6bdf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\SnippetVehicle2Common\physxintegration">
+      <UniqueIdentifier>{e9eb6e31-341d-4a43-ae54-0a916e597f50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\SnippetVehicle2Common\enginedrivetrain">
+      <UniqueIdentifier>{3bfa0c6b-1e8e-4441-ba63-e606fc0af519}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\SnippetVehicle2Common\directdrivetrain">
+      <UniqueIdentifier>{b60253b8-701f-479c-80f6-8660b4bd6bd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\SnippetVehicle2Common\base">
+      <UniqueIdentifier>{d5da1fca-92b3-4331-b185-964ac0e4a9f9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="TestPhysX.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SnippetHelloWorld.cpp">
+      <Filter>Source Files\HelloWorld</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetrender\SnippetCamera.cpp">
+      <Filter>Resource Files\SnippetRender</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetrender\SnippetFontRenderer.cpp">
+      <Filter>Resource Files\SnippetRender</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetrender\SnippetRender.cpp">
+      <Filter>Resource Files\SnippetRender</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\SnippetVehicleHelpers.cpp">
+      <Filter>Resource Files\SnippetVehicle2Common</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetutils\SnippetImmUtils.cpp">
+      <Filter>Resource Files\SnippetUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetutils\SnippetUtils.cpp">
+      <Filter>Resource Files\SnippetUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\base\Base.cpp">
+      <Filter>Resource Files\SnippetVehicle2Common\base</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\directdrivetrain\DirectDrivetrain.cpp">
+      <Filter>Resource Files\SnippetVehicle2Common\directdrivetrain</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\serialization\BaseSerialization.cpp">
+      <Filter>Resource Files\SnippetVehicle2Common\serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\serialization\DirectDrivetrainSerialization.cpp">
+      <Filter>Resource Files\SnippetVehicle2Common\serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\serialization\EngineDrivetrainSerialization.cpp">
+      <Filter>Resource Files\SnippetVehicle2Common\serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\serialization\SerializationCommon.cpp">
+      <Filter>Resource Files\SnippetVehicle2Common\serialization</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\enginedrivetrain\EngineDrivetrain.cpp">
+      <Filter>Resource Files\SnippetVehicle2Common\enginedrivetrain</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\physxintegration\PhysXIntegration.cpp">
+      <Filter>Resource Files\SnippetVehicle2Common\physxintegration</Filter>
+    </ClCompile>
+    <ClCompile Include="SnippetVehicleDirectDrive.cpp">
+      <Filter>Source Files\Vehicle</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\SnippetVehicleRender.cpp">
+      <Filter>Resource Files\SnippetVehicle2Common</Filter>
+    </ClCompile>
+    <ClCompile Include="SnippetHelloWorldRender.cpp">
+      <Filter>Source Files\HelloWorld</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
