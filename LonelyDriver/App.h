@@ -19,6 +19,14 @@ public:
 	void Run();
 
 private:
+	void InitPhysics();
+	void StepPhysics();
+	void CleanUpPhysics();
+
+	void StartRender();
+	void RenderObjects();
+	void FinishRender();
+
 	int InitOpenGL();
 	void LoadModels();
 	void UpdateDeltaTime();
@@ -45,4 +53,8 @@ private:
 	Shader* modelShader;
 
 	Plane* road;
+
+	// view and projection matrices
+	glm::mat4 view;
+	glm::mat4 projection;
 };
