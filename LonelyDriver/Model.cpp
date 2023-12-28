@@ -11,6 +11,8 @@ void Model::Draw(Shader& shader)
 	{
 		meshes[i].Draw(shader);
 	}
+	//// draw wireframe
+	Cube::Draw(shader);
 }
 
 void Model::LoadModel(const std::string& path)

@@ -1,6 +1,6 @@
 #include "Plane.h"
 
-Plane::Plane() : m_VAO(-1), m_VBO(-1), m_EBO(-1)
+Plane::Plane(std::string _name) : Drawable(_name), m_VAO(-1), m_VBO(-1), m_EBO(-1)
 {
 	SetUpPlane();
 }

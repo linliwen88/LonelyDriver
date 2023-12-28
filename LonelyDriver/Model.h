@@ -1,21 +1,25 @@
 #pragma once
 #include <vector>
+
+#ifndef __INCLUDE_STRING__
+#define __INCLUDE_STRING__
 #include <string>
+#endif
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "Drawable.h";
+#include "Cube.h";
 #include "Mesh.h"
 class Shader;
 
 unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma = false);
 
-class Model : public Drawable
+class Model : public Cube
 {
 public:
-	Model(char* path)
+	Model(std::string _name, glm::vec3 _position, char* path) : Cube(_name, _position, 1.5f, .875f, 3.f)
 	{
 		LoadModel(path);
 	}

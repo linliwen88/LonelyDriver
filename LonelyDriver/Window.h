@@ -6,8 +6,12 @@
 #include <GLFW/glfw3.h>
 #endif
 
-#include <iostream>
+#ifndef __INCLUDE_STRING__
+#define __INCLUDE_STRING__
 #include <string>
+#endif
+
+#include <iostream> 
 
 class Camera;
 

@@ -3,12 +3,18 @@
 #define __INCLUDE_GLM_HPP__
 #include <glm/glm.hpp>
 #endif
+
+#ifndef __INCLUDE_STRING__
+#define __INCLUDE_STRING__
 #include <string>
+#endif
+
 #include <unordered_map>
 class Camera;
 class Shader;
 class Model;
 class Cube;
+class Light;
 class Plane;
 
 class App
@@ -21,13 +27,11 @@ public:
 
 private:
 	void StartRender();
-	void RenderObjects();
 	void FinishRender();
-	/*void RenderActors(physx::PxRigidActor** actors, const physx::PxU32 numActors, bool shadows, const physx::PxVec3& color,
-		bool changeColorForSleepingActors, bool wireframePass);*/
 
 	int InitOpenGL();
-	void LoadModels();
+	void LoadShaders();
+	void CreateDrawableObjects();
 	void UpdateDeltaTime();
 
 	// application informations
@@ -43,8 +47,7 @@ private:
 	Camera* camera;
 
 	// light
-	glm::vec3 lightPosition;
-	Cube* lightCube;
+	Light* lightCube;
 	Shader* lightShader;
 
 	// models

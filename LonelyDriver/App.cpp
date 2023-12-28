@@ -22,6 +22,7 @@
 #include "stb_image.h"
 #endif
 
+#include <iostream>
 
 #include "Camera.h"
 #include "Window.h"
@@ -30,26 +31,32 @@
 #include "Shader.h"
 #include "Model.h"
 #include "Cube.h"
+#include "Light.h"
 #include "Plane.h"
-#include <iostream>
+
+void PrintVec3(glm::vec3 v)
+{
+    std::cout << v.x << ' ' << v.y << ' ' << v.z << std::endl;
+}
 
 
 App::App(const int width, const int height, const std::string& title) :
     SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title), deltaTime(0.0f), lastFrame(0.0f),
-    camera(nullptr),
-    lightPosition(glm::vec3(1.0)), lightCube(nullptr), lightShader(nullptr),
+    camera(nullptr), lightCube(nullptr), lightShader(nullptr),
     carModel(nullptr), modelShader(nullptr),
     road(nullptr),
     view(glm::mat4(0.f)), projection(glm::mat4(0.f))
 {
-	// create GLFW window
+	// Initialize GLFW window
     Window::Init(SCR_WIDTH, SCR_HEIGHT, TITLE);
 
+    // Initialize PhysX API
     Physics::Init();
 
     // Init OpenGL and run
     InitOpenGL();
-    LoadModels();
+    LoadShaders();
+    CreateDrawableObjects();
 
     // TODO: add error check before running
     Run();
@@ -68,18 +75,12 @@ App::~App()
 // Set camera view and projection tranformations
 void App::StartRender()
 {
-    glClearColor(0.05f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     projection = glm::perspective(glm::radians(camera->Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     view = camera->GetViewMatrix();
 }
-
-void App::RenderObjects()
-{
-
-}
-
 
 // Check all events and swap front and back buffers
 void App::FinishRender()
@@ -91,37 +92,44 @@ void App::FinishRender()
 int App::InitOpenGL()
 {
     // glad: load all OpenGL function pointers
-    // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-    camera = new Camera(glm::vec3(3.0f, 1.0f, 3.0f));
-    Window::RegisterCamera(camera);
-
-    lightCube = new Cube();
-    lightShader = new Shader("shaders/lightSource_vshader.glsl", "shaders/lightSource_fshader.glsl");
-
-    road = new Plane();
 
     // configure global opengl state
-    // -----------------------------
     glEnable(GL_DEPTH_TEST);
+
+
+    // camera = new Camera(glm::vec3(3.0f, 1.0f, 3.0f));
+    camera = new Camera(glm::vec3(0.0f, 2.0f, 20.0f));
+    Window::RegisterCamera(camera);
+
 
     return 0;
 }
 
-void App::LoadModels()
+void App::LoadShaders()
+{
+    lightShader = new Shader("shaders/lightSource_vshader.glsl", "shaders/lightSource_fshader.glsl");
+    modelShader = new Shader("shaders/model_load_vshader.glsl", "shaders/model_load_fshader.glsl");
+}
+
+void App::CreateDrawableObjects()
 {
     // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
     stbi_set_flip_vertically_on_load(true);
 
-    modelShader = new Shader("shaders/model_load_vshader.glsl", "shaders/model_load_fshader.glsl");
-
-    // std::string modelPath = "assets/backpack/backpack.obj";
+    // Load car model
     std::string modelPath = "assets/audi/audi.obj";
-    carModel = new Model(modelPath.data());
+    carModel = new Model("car", glm::vec3(0.f, 5.f, 0.f), modelPath.data());
+
+    // create light cube
+    lightCube = new Light("light", glm::vec3(3.f, 20.f, 0.f));
+
+    // create plane
+    road = new Plane("plane");
 }
 
 void App::Run()
@@ -137,18 +145,12 @@ void App::Run()
         Window::ProcessInput(deltaTime);
 
         // calculate physics
-        Physics::Step(objectGlobalPoses);
+        Physics::Step(objectGlobalPoses, lightCube);
 
         StartRender();
         
-
         // don't forget to enable shader before setting uniforms
         modelShader->use();
-        lightPosition = glm::vec3(2.2f, 2.0f, 2.0f);
-        glm::vec3 lightAmbient = glm::vec3(1.0f, 1.0f, 1.0f);
-        glm::vec3 lightDiffuse = glm::vec3(0.5f, 0.5f, 0.5f);
-        glm::vec3 lightSpecular = glm::vec3(1.0f, 1.0f, 1.0f);
-        glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
@@ -158,34 +160,34 @@ void App::Run()
         modelShader->setMat4("projection", projection);
         modelShader->setMat4("view", view);
         
-        modelShader->setVec3("lightAmbient", lightAmbient);
-        modelShader->setVec3("lightDiffuse", lightDiffuse);
-        modelShader->setVec3("lightSpecular", lightSpecular);
-        modelShader->setVec3("lightColor", lightColor);
+        modelShader->setVec3("lightAmbient", lightCube->Ambient);
+        modelShader->setVec3("lightDiffuse", lightCube->Diffuse);
+        modelShader->setVec3("lightSpecular", lightCube->Specular);
+        modelShader->setVec3("lightColor", lightCube->Color);
 
-        modelShader->setVec3("lightPosition", lightPosition);
+        modelShader->setVec3("lightPosition", lightCube->Position);
         modelShader->setVec3("viewPos", camera->Position);
 
         // render plane
         road->Draw(*modelShader);
 
+        // render the car
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
-
-        // render the loaded model
+        model = model * objectGlobalPoses[carModel->Name];
+        model = glm::translate(model, glm::vec3(0.0f, -0.875f, 0.0f)); // translate it down so it's at the center of the scene
         modelShader->setMat4("model", model);
         carModel->Draw(*modelShader);
+        // modelShader->setMat4("model", objectGlobalPoses[carCube->Name]);
+        // carCube->Draw(*modelShader);
 
         // render light source
         lightShader->use();
-        model = glm::translate(model, lightPosition);
-        model = glm::scale(model, glm::vec3(0.2f));
-        lightShader->setMat4("model", objectGlobalPoses["lightBox"]);
+        lightShader->setMat4("model", objectGlobalPoses[lightCube->Name]);
         lightShader->setMat4("view", view);
         lightShader->setMat4("projection", projection);
 
         lightCube->Draw(*lightShader);
+        // PrintVec3(lightCube->Position);
 
         FinishRender();
     }

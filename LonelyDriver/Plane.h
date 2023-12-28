@@ -9,12 +9,17 @@
 #include <glm/glm.hpp>
 #endif
 
+#ifndef __INCLUDE_STRING__
+#define __INCLUDE_STRING__
+#include <string>
+#endif
+
 #include "Drawable.h"
 
 class Plane : public Drawable
 {
 public:
-	Plane();
+	Plane(std::string _name);
 	~Plane() {}
 
 	void Draw(Shader& shader) override;

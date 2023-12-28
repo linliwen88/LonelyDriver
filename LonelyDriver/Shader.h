@@ -13,7 +13,11 @@
 #include <glm/glm.hpp>
 #endif
 
+#ifndef __INCLUDE_STRING__
+#define __INCLUDE_STRING__
 #include <string>
+#endif
+
 #include <fstream>
 #include <sstream>
 #include <iostream>

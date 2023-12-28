@@ -1,6 +1,7 @@
 #include "Physics.h"
 #include "Converter.h"
-
+#include "Light.h"
+#include "Drawable.h"
 
 #define PVD_HOST "127.0.0.1"
 
@@ -38,34 +39,49 @@ void Physics::Init()
         pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
         pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
     }
-    gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 
-    // create plane
+    Physics::CreatePlane();
+}
+
+void Physics::CreatePlane()
+{
+    gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
     physx::PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, physx::PxPlane(0, 1, 0, 0), *gMaterial);
     groundPlane->setName("ground");
     gScene->addActor(*groundPlane);
-
-    // create a box
-    physx::PxTransform t = physx::PxTransform(physx::PxVec3(0, 0, 0));
-
-    physx::PxShape* shape = gPhysics->createShape(physx::PxBoxGeometry(2.0f, 2.0f, 2.0f), *gMaterial);
-    physx::PxTransform localTm(physx::PxVec3(physx::PxReal(1 * 2) - physx::PxReal(10 - 1), physx::PxReal(1 * 2 + 1), 0) * 2.0f);
-    physx::PxRigidDynamic* body = gPhysics->createRigidDynamic(t.transform(localTm));
-    body->attachShape(*shape);
-    body->setName("lightBox");
-    physx::PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
-    gScene->addActor(*body);
-    shape->release();
 }
 
-void Physics::Step(std::unordered_map<std::string, glm::mat4>& objectGlobalPoses)
+void Physics::AddActor(const physx::PxGeometryType::Enum& geoType, Drawable* object)
+{
+    // material
+    // RigidActor type: PxRigidStatic | PxRigidDynamic 
+    // Pxshape
+    // Transform
+
+    gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
+
+    if (geoType == physx::PxGeometryType::eBOX)
+    {
+        // create a box
+        Cube* cubeObject = static_cast<Cube*>(object);
+
+        physx::PxTransform t = physx::PxTransform(glmVec3ToPhysXVec3(cubeObject->Position));
+        
+        // physx::PxShape* shape = gPhysics->createShape(physx::PxBoxGeometry(cubeObject->hx / 2.f, cubeObject->hy / 2.f, cubeObject->hz / 2.f), *gMaterial);
+        physx::PxShape* shape = gPhysics->createShape(physx::PxBoxGeometry(cubeObject->m_HalfLength.x, cubeObject->m_HalfLength.y, cubeObject->m_HalfLength.z), *gMaterial);
+        physx::PxRigidDynamic* body = gPhysics->createRigidDynamic(t);
+        body->attachShape(*shape);
+        body->setName(cubeObject->Name.c_str());
+        physx::PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
+        gScene->addActor(*body);
+        shape->release();
+    }
+}
+
+void Physics::Step(std::unordered_map<std::string, glm::mat4>& objectGlobalPoses, Light* light)
 {
     gScene->simulate(1.0f / 60.0f);
     gScene->fetchResults(true);
-
-    // Get new object gobal poses
-    // physx::PxScene* scene;
-    // PxGetPhysics().getScenes(&scene, 1);
 
     physx::PxU32 nbActors = gScene->getNbActors(physx::PxActorTypeFlag::eRIGID_DYNAMIC | physx::PxActorTypeFlag::eRIGID_STATIC);
 
@@ -83,15 +99,18 @@ void Physics::Step(std::unordered_map<std::string, glm::mat4>& objectGlobalPoses
             const physx::PxU32 nbShapes = actors[i]->getNbShapes();
             PX_ASSERT(nbShapes <= MAX_NUM_ACTOR_SHAPES);
             actors[i]->getShapes(shapes, nbShapes);
-            // std::cout << "Name of this actor is: " << actors[i]->getName() << std::endl;
 
             for (physx::PxU32 j = 0; j < nbShapes; j++)
             {
                 const physx::PxMat44 shapePose(physx::PxShapeExt::getGlobalPose(*shapes[j], *actors[i]));
                 const physx::PxGeometry& geom = shapes[j]->getGeometry();
-                // std::cout << "rendering " << geom.getType() << " geometry" << std::endl;
                 newModelMat = PhysXMat4ToglmMat4(shapePose);
                 objectGlobalPoses[actors[i]->getName()] = newModelMat;
+
+                if (actors[i]->getName() == light->Name)
+                {
+                    light->Position = PhysXVec3ToglmVec3(physx::PxShapeExt::getGlobalPose(*shapes[j], *actors[i]).p);
+                }
             }
         }
     }
