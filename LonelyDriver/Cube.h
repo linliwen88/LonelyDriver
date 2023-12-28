@@ -24,7 +24,7 @@ public:
 
 	~Cube(){};
 
-    void Draw(Shader& shader) override;
+    void Draw(Shader& shade, bool drawWireframe) override;
 
 	glm::vec3 m_HalfLength;
 	

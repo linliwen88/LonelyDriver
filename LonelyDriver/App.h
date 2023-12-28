@@ -61,4 +61,5 @@ private:
 	glm::mat4 projection;
 
 	std::unordered_map<std::string, glm::mat4> objectGlobalPoses;
+	bool DrawWireframe;
 };

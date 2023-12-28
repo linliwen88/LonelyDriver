@@ -5,11 +5,14 @@ Plane::Plane(std::string _name) : Drawable(_name), m_VAO(-1), m_VBO(-1), m_EBO(-
 	SetUpPlane();
 }
 
-void Plane::Draw(Shader& shader)
+void Plane::Draw(Shader& shader, bool drawWireframe)
 {
+	// set polygon mode to draw wireframe
+	if (drawWireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glBindVertexArray(m_VAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(m_VAO);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void Plane::SetUpPlane()

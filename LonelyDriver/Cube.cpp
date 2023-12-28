@@ -20,10 +20,11 @@ Cube::Cube(std::string _name, glm::vec3 _position, float _hx, float _hy, float _
     Physics::AddActor(physx::PxGeometryType::eBOX, this);
 }
 
-void Cube::Draw(Shader& shader)
+void Cube::Draw(Shader& shader, bool drawWireframe)
 {
     // set polygon mode to draw wireframe
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    if (drawWireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	glBindVertexArray(m_VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);

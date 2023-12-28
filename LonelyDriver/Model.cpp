@@ -5,14 +5,27 @@
 #include "stb_image.h"
 #endif
 
-void Model::Draw(Shader& shader)
+//void Model::Draw(Shader& shader, bool DrawWireframe)
+//{
+//	for (unsigned int i = 0; i < meshes.size(); i++)
+//	{
+//		meshes[i].Draw(shader);
+//	}
+//}
+
+void Model::Draw(Shader& shader, glm::mat4 model, bool DrawWireframe)
 {
+	if (DrawWireframe)
+	{
+		shader.setMat4("model", model);
+		Cube::Draw(shader, DrawWireframe);
+	}
+	model = glm::translate(model, draw_offset);
+	shader.setMat4("model", model);
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{
 		meshes[i].Draw(shader);
 	}
-	//// draw wireframe
-	Cube::Draw(shader);
 }
 
 void Model::LoadModel(const std::string& path)

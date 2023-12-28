@@ -22,7 +22,7 @@ public:
 	Plane(std::string _name);
 	~Plane() {}
 
-	void Draw(Shader& shader) override;
+	void Draw(Shader& shader, bool drawWireframe) override;
 
 private:
 	void SetUpPlane();

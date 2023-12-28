@@ -34,6 +34,7 @@
 #include "Light.h"
 #include "Plane.h"
 
+
 void PrintVec3(glm::vec3 v)
 {
     std::cout << v.x << ' ' << v.y << ' ' << v.z << std::endl;
@@ -45,7 +46,8 @@ App::App(const int width, const int height, const std::string& title) :
     camera(nullptr), lightCube(nullptr), lightShader(nullptr),
     carModel(nullptr), modelShader(nullptr),
     road(nullptr),
-    view(glm::mat4(0.f)), projection(glm::mat4(0.f))
+    view(glm::mat4(0.f)), projection(glm::mat4(0.f)),
+    DrawWireframe(false)
 {
 	// Initialize GLFW window
     Window::Init(SCR_WIDTH, SCR_HEIGHT, TITLE);
@@ -168,17 +170,14 @@ void App::Run()
         modelShader->setVec3("lightPosition", lightCube->Position);
         modelShader->setVec3("viewPos", camera->Position);
 
+        DrawWireframe = false;
         // render plane
-        road->Draw(*modelShader);
+        road->Draw(*modelShader, DrawWireframe);
 
         // render the car
         model = glm::mat4(1.0f);
         model = model * objectGlobalPoses[carModel->Name];
-        model = glm::translate(model, glm::vec3(0.0f, -0.875f, 0.0f)); // translate it down so it's at the center of the scene
-        modelShader->setMat4("model", model);
-        carModel->Draw(*modelShader);
-        // modelShader->setMat4("model", objectGlobalPoses[carCube->Name]);
-        // carCube->Draw(*modelShader);
+        carModel->Draw(*modelShader, model, DrawWireframe);
 
         // render light source
         lightShader->use();
@@ -186,7 +185,7 @@ void App::Run()
         lightShader->setMat4("view", view);
         lightShader->setMat4("projection", projection);
 
-        lightCube->Draw(*lightShader);
+        lightCube->Draw(*lightShader, DrawWireframe);
         // PrintVec3(lightCube->Position);
 
         FinishRender();
