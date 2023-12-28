@@ -11,6 +11,11 @@
 
 <img src="./pics/progress_20231221_1.png" width="200" /><img src="./pics/progress_20231221_2.png" width="200" />
 
+- 12/27/2023: Added gravity to car model and light cube
+- separated phisics functionalities into a singleton class
+
+<img src="./pics/progress_20231227.gif" width="400" />
+
 ### TODOs
 - change pointers to smart pointers
 - should I move all dependencies (imgui, glfw, glm...) into solution folder?
