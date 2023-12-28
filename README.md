@@ -18,4 +18,5 @@
 
 ### TODOs
 - change pointers to smart pointers
+- clean way to render wireframes (bounding box)
 - should I move all dependencies (imgui, glfw, glm...) into solution folder?
