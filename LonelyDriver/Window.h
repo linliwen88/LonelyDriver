@@ -1,6 +1,5 @@
 #pragma once
 
-
 #ifndef _INCLUDE_GLFW_
 #define _INCLUDE_GLFW_
 #define GLFW_INCLUDE_NONE
@@ -17,7 +16,7 @@ class Window
 {
 public:
 	static double	GetTime()		{ return glfwGetTime(); }
-	static void		Terminate()		{		 glfwTerminate(); }
+	static void		Terminate()		{ glfwTerminate(); std::cout << "glfw Terminated\n"; }
 	static void		PollEvents()	{		 glfwPollEvents(); }
 	static bool		ShouldClose()	{ return glfwWindowShouldClose(m_window); }
 	static void		SwapBuffers()	{		 glfwSwapBuffers(m_window); }
@@ -36,7 +35,7 @@ private:
 	static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 	static void error_callback(int error, const char* msg);
 
-	static GLFWwindow* m_window;
+	static GLFWwindow*  m_window;
 	static std::string	TITLE;
 	static int			SCR_WIDTH;
 	static int			SCR_HEIGHT;

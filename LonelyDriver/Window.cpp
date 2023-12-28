@@ -9,7 +9,7 @@
 #include <iostream>
 
 GLFWwindow* Window::m_window    = nullptr;
-std::string Window::TITLE      = "";
+std::string Window::TITLE       = "";
 int         Window::SCR_WIDTH   = 800;
 int         Window::SCR_HEIGHT  = 600;
 float       Window::lastX       = SCR_WIDTH / 2.0f;

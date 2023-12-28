@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #endif
 #include <string>
+#include <unordered_map>
 class Camera;
 class Shader;
 class Model;
@@ -19,13 +20,11 @@ public:
 	void Run();
 
 private:
-	void InitPhysics();
-	void StepPhysics();
-	void CleanUpPhysics();
-
 	void StartRender();
 	void RenderObjects();
 	void FinishRender();
+	/*void RenderActors(physx::PxRigidActor** actors, const physx::PxU32 numActors, bool shadows, const physx::PxVec3& color,
+		bool changeColorForSleepingActors, bool wireframePass);*/
 
 	int InitOpenGL();
 	void LoadModels();
@@ -57,4 +56,6 @@ private:
 	// view and projection matrices
 	glm::mat4 view;
 	glm::mat4 projection;
+
+	std::unordered_map<std::string, glm::mat4> objectGlobalPoses;
 };

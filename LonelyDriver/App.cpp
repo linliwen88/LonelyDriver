@@ -22,29 +22,17 @@
 #include "stb_image.h"
 #endif
 
-#ifndef __INCLUDE_PHYSX__
-#define __INCLUDE_PHYSX__
-#include "PxPhysicsAPI.h"
-#endif
 
-#include "Shader.h"
 #include "Camera.h"
 #include "Window.h"
+#include "Physics.h"
+
+#include "Shader.h"
 #include "Model.h"
 #include "Cube.h"
 #include "Plane.h"
 #include <iostream>
 
-#define PVD_HOST "127.0.0.1"
-
-static physx::PxDefaultAllocator		gAllocator;
-static physx::PxDefaultErrorCallback	gErrorCallback;
-static physx::PxFoundation* gFoundation = NULL;
-static physx::PxPhysics* gPhysics = NULL;
-static physx::PxDefaultCpuDispatcher* gDispatcher = NULL;
-static physx::PxScene* gScene = NULL;
-static physx::PxMaterial* gMaterial = NULL;
-static physx::PxPvd* gPvd = NULL;
 
 App::App(const int width, const int height, const std::string& title) :
     SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title), deltaTime(0.0f), lastFrame(0.0f),
@@ -57,7 +45,8 @@ App::App(const int width, const int height, const std::string& title) :
 	// create GLFW window
     Window::Init(SCR_WIDTH, SCR_HEIGHT, TITLE);
 
-    InitPhysics();
+    Physics::Init();
+
     // Init OpenGL and run
     InitOpenGL();
     LoadModels();
@@ -66,6 +55,7 @@ App::App(const int width, const int height, const std::string& title) :
     Run();
 
     Window::Terminate();
+    Physics::CleanUp();
 }
 
 App::~App()
@@ -73,63 +63,6 @@ App::~App()
     delete camera;
     delete carModel;
     delete modelShader;
-    CleanUpPhysics();
-}
-
-void App::InitPhysics()
-{
-    gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
-
-    gPvd = PxCreatePvd(*gFoundation);
-    physx::PxPvdTransport* transport = physx::PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10);
-    gPvd->connect(*transport, physx::PxPvdInstrumentationFlag::eALL);
-
-    gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, physx::PxTolerancesScale(), true, gPvd);
-
-    physx::PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
-    sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
-    gDispatcher = physx::PxDefaultCpuDispatcherCreate(2);
-    sceneDesc.cpuDispatcher = gDispatcher;
-    sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
-    gScene = gPhysics->createScene(sceneDesc);
-
-    physx::PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
-    if (pvdClient)
-    {
-        pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
-        pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
-        pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
-    }
-    gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
-
-    physx::PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, physx::PxPlane(0, 1, 0, 0), *gMaterial);
-    gScene->addActor(*groundPlane);
-
-    for (physx::PxU32 i = 0;i < 5;i++) {
-        // createStack(physx::PxTransform(physx::PxVec3(0, 0, stackZ -= 10.0f)), 10, 2.0f);
-    }
-}
-
-void App::StepPhysics()
-{
-    gScene->simulate(1.0f / 60.0f);
-    gScene->fetchResults(true);
-}
-
-void App::CleanUpPhysics()
-{
-    PX_RELEASE(gScene);
-    PX_RELEASE(gDispatcher);
-    PX_RELEASE(gPhysics);
-    if (gPvd)
-    {
-        physx::PxPvdTransport* transport = gPvd->getTransport();
-        gPvd->release();	gPvd = NULL;
-        PX_RELEASE(transport);
-    }
-    PX_RELEASE(gFoundation);
-
-    printf("SnippetHelloWorld done.\n");
 }
 
 // Set camera view and projection tranformations
@@ -146,6 +79,7 @@ void App::RenderObjects()
 {
 
 }
+
 
 // Check all events and swap front and back buffers
 void App::FinishRender()
@@ -199,10 +133,11 @@ void App::Run()
         // per-frame logic
         UpdateDeltaTime();
 
-        Step
-
         // input
         Window::ProcessInput(deltaTime);
+
+        // calculate physics
+        Physics::Step(objectGlobalPoses);
 
         StartRender();
         
@@ -242,14 +177,14 @@ void App::Run()
         modelShader->setMat4("model", model);
         carModel->Draw(*modelShader);
 
+        // render light source
         lightShader->use();
         model = glm::translate(model, lightPosition);
         model = glm::scale(model, glm::vec3(0.2f));
-        lightShader->setMat4("model", model);
+        lightShader->setMat4("model", objectGlobalPoses["lightBox"]);
         lightShader->setMat4("view", view);
         lightShader->setMat4("projection", projection);
 
-        // render light source
         lightCube->Draw(*lightShader);
 
         FinishRender();
