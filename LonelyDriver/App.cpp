@@ -183,7 +183,7 @@ void App::Run()
         modelShader->setVec3("lightPosition", lightCube->Position);
         modelShader->setVec3("viewPos", camera->Position);
 
-        DrawWireframe = false;
+        DrawWireframe = true;
         // render plane
         road->Draw(*modelShader, DrawWireframe);
 

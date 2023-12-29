@@ -16,7 +16,14 @@
 
 <img src="./pics/progress_20231227.gif" width="400" />
 
+- 12/28/2023: Draw skybox using cubemap. Created `Skybox` class that derives `Drawable` for special draw calls.
+- Toggle var `DrawWireframe` in `App` class to draw wireframe.  
+
+<img src="./pics/progress_20231228.png" width="200" /><img src="./pics/progress_20231228_2.png" width="200" />
+
 ### TODOs
-- change pointers to smart pointers
-- clean way to render wireframes (bounding box)
-- should I move all dependencies (imgui, glfw, glm...) into solution folder?
+- [x] clean way to render wireframes (bounding box)
+- [ ] terrain
+- [ ] vehicle physics and user control 
+- [ ] change pointers to smart pointers
+- [ ] should I move all dependencies (imgui, glfw, glm...) into solution folder?
