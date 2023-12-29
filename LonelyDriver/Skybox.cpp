@@ -44,9 +44,8 @@ Skybox::Skybox(std::string _name) : Drawable(_name),
 
 void Skybox::Draw(Shader& shader, bool drawWireframe)
 {
+    // Draw skybox cube
     glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-    
-    // skybox cube
     glBindVertexArray(m_VAO);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);

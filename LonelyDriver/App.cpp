@@ -43,7 +43,7 @@ void PrintVec3(glm::vec3 v)
 
 
 App::App(const int width, const int height, const std::string& title) :
-    SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title), deltaTime(0.0f), lastFrame(0.0f),
+    SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title), deltaTime(1.0f / 60.0f), lastFrame(0.0f),
     camera(nullptr), lightCube(nullptr), lightShader(nullptr),
     carModel(nullptr), modelShader(nullptr),
     road(nullptr),
@@ -51,7 +51,7 @@ App::App(const int width, const int height, const std::string& title) :
     DrawWireframe(false)
 {
 	// Initialize GLFW window
-    Window::Init(SCR_WIDTH, SCR_HEIGHT, TITLE);
+    Window::Init(&SCR_WIDTH, &SCR_HEIGHT, TITLE);
 
     // Initialize PhysX API
     Physics::Init();
@@ -95,11 +95,21 @@ void App::StartRender()
     view = camera->GetViewMatrix();
 }
 
-// Check all events and swap front and back buffers
+// Check all events and swap front and back buffers, update delta time for frame-dependent physics
 void App::FinishRender()
 {
+    float timeBeforePollEvents = Window::GetTime();
+
     Window::PollEvents();
     Window::SwapBuffers();
+
+    float timeAfterPollEvents = Window::GetTime();
+    if (lastFrame != 0.0f) // First deltaTime is initialized to 1.0f / 60.0f;
+    {
+        deltaTime = timeBeforePollEvents - lastFrame;
+    }
+
+    lastFrame = timeAfterPollEvents;
 }
 
 int App::InitOpenGL()
@@ -110,9 +120,6 @@ int App::InitOpenGL()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-
-    // configure global opengl state
-    glEnable(GL_DEPTH_TEST);
 
     // create camera
     camera = new Camera(glm::vec3(0.0f, 2.0f, 20.0f));
@@ -141,7 +148,7 @@ void App::CreateDrawableObjects()
     carModel = new Model("car", glm::vec3(0.f, 5.f, 0.f), modelPath.data());
 
     // create light cube
-    lightCube = new Light("light", glm::vec3(3.f, 20.f, 0.f));
+    lightCube = new Light("light", glm::vec3(3.f, 10.f, 0.f));
 
     // create plane
     road = new Plane("plane");
@@ -153,14 +160,11 @@ void App::Run()
     glEnable(GL_DEPTH_TEST);
     while (!Window::ShouldClose())
     {
-        // per-frame logic
-        UpdateDeltaTime();
-
         // input
         Window::ProcessInput(deltaTime);
 
-        // calculate physics
-        Physics::Step(objectGlobalPoses, lightCube);
+        // calculate physics, update object world poses (position and rotation) and light position
+        Physics::Step(deltaTime, objectGlobalPoses, lightCube);
 
         StartRender();
         
@@ -183,7 +187,7 @@ void App::Run()
         modelShader->setVec3("lightPosition", lightCube->Position);
         modelShader->setVec3("viewPos", camera->Position);
 
-        DrawWireframe = true;
+        DrawWireframe = false;
         // render plane
         road->Draw(*modelShader, DrawWireframe);
 
@@ -209,13 +213,7 @@ void App::Run()
         skybox->Draw(*skyboxShader, DrawWireframe);
 
         FinishRender();
-    }
-}
 
-void App::UpdateDeltaTime()
-{
-    float currentFrame = Window::GetTime();
-    deltaTime = currentFrame - lastFrame;
-    lastFrame = currentFrame;
+    }
 }
 

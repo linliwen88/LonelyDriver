@@ -10,18 +10,21 @@
 
 GLFWwindow* Window::m_window    = nullptr;
 std::string Window::TITLE       = "";
-int         Window::SCR_WIDTH   = 800;
-int         Window::SCR_HEIGHT  = 600;
-float       Window::lastX       = SCR_WIDTH / 2.0f;
-float       Window::lastY       = SCR_HEIGHT / 2.0f;
+int*         Window::SCR_WIDTH   = nullptr;
+int*         Window::SCR_HEIGHT  = nullptr;
+float       Window::lastX       = 400.f / 2.0f;
+float       Window::lastY       = 400.f / 2.0f;
 bool        Window::firstMouse  = true;
 Camera*     Window::camera      = nullptr;
 
-int Window::Init(const int width, const int height, const std::string& title)
+int Window::Init(int* scrWidthPtr, int* scrHeightPtr, const std::string& title)
 {
-    SCR_WIDTH = width;
-    SCR_HEIGHT = height;
+    SCR_WIDTH = scrWidthPtr;
+    SCR_HEIGHT = scrHeightPtr;
     TITLE = title;
+
+    lastX = *SCR_WIDTH / 2.f;
+    lastY = *SCR_HEIGHT / 2.f;
 
     if (m_window == nullptr)
     {
@@ -40,7 +43,7 @@ int Window::Init(const int width, const int height, const std::string& title)
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         // glfw window creation
-        m_window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, TITLE.c_str(), NULL, NULL);
+        m_window = glfwCreateWindow(*SCR_WIDTH, *SCR_HEIGHT, TITLE.c_str(), NULL, NULL);
 
         if (m_window == NULL)
         {
@@ -75,12 +78,11 @@ void Window::ProcessInput(float deltaTime)
 
 void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    SCR_WIDTH  = width;
-    SCR_HEIGHT = height;
+    *SCR_WIDTH  = width;
+    *SCR_HEIGHT = height;
     lastX    = width / 2.f;
     lastY    = height / 2.f;
-
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    glViewport(0, 0, *SCR_WIDTH, *SCR_HEIGHT);
 }
 
 

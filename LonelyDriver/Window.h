@@ -21,12 +21,12 @@ class Window
 public:
 	static double	GetTime()		{ return glfwGetTime(); }
 	static void		Terminate()		{ glfwTerminate(); std::cout << "glfw Terminated\n"; }
-	static void		PollEvents()	{		 glfwPollEvents(); }
+	static void		PollEvents()	{ glfwPollEvents(); }
 	static bool		ShouldClose()	{ return glfwWindowShouldClose(m_window); }
 	static void		SwapBuffers()	{		 glfwSwapBuffers(m_window); }
 	static void		RegisterCamera(Camera* _camera) { camera = _camera; }
 
-	static int	Init(const int width, const int height, const std::string& name);
+	static int	Init(int* scrWidthPtr, int* scrHeightPtr, const std::string& name);
 	static void ProcessInput(float deltaTime);
 
 private:
@@ -41,8 +41,8 @@ private:
 
 	static GLFWwindow*  m_window;
 	static std::string	TITLE;
-	static int			SCR_WIDTH;
-	static int			SCR_HEIGHT;
+	static int*			SCR_WIDTH;
+	static int*			SCR_HEIGHT;
 	static float		lastX;
 	static float		lastY;
 	static bool			firstMouse;

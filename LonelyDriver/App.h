@@ -33,7 +33,6 @@ private:
 	int InitOpenGL();
 	void CreateSkybox();
 	void CreateDrawableObjects();
-	void UpdateDeltaTime();
 
 	// application informations
 	int SCR_WIDTH;

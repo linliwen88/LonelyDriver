@@ -78,9 +78,9 @@ void Physics::AddActor(const physx::PxGeometryType::Enum& geoType, Drawable* obj
     }
 }
 
-void Physics::Step(std::unordered_map<std::string, glm::mat4>& objectGlobalPoses, Light* light)
+void Physics::Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& objectGlobalPoses, Light* light)
 {
-    gScene->simulate(1.0f / 60.0f);
+    gScene->simulate(deltaTime);
     gScene->fetchResults(true);
 
     physx::PxU32 nbActors = gScene->getNbActors(physx::PxActorTypeFlag::eRIGID_DYNAMIC | physx::PxActorTypeFlag::eRIGID_STATIC);

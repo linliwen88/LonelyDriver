@@ -24,7 +24,7 @@ public:
 	Skybox(std::string _name);
 	~Skybox()
 	{
-		printf("deleting %s vao, vbo, and terxture\n", Name.c_str());
+		printf("deleting %s vao, vbo, and texture\n", Name.c_str());
 		glDeleteVertexArrays(1, &m_VAO);
 		glDeleteBuffers(1, &m_VBO);
 		glDeleteTextures(1, &cubemapTexture);

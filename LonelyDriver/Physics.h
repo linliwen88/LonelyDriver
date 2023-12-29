@@ -26,7 +26,7 @@ public:
 	static void Init();
 	static void AddActor(const physx::PxGeometryType::Enum& geoType, Drawable* object);
 	static void CreatePlane();
-	static void Step(std::unordered_map<std::string, glm::mat4>& objectGlobalPoses, Light* light);
+	static void Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& objectGlobalPoses, Light* light);
 	static void CleanUp();
 
 private:
