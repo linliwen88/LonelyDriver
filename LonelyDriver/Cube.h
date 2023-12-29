@@ -22,9 +22,15 @@ public:
 	Cube(std::string _name, glm::vec3 _position, float _hLength = 0.5f);
 	Cube(std::string _name, glm::vec3 _position, float hx, float hy, float hz);
 
-	~Cube(){};
+	~Cube()
+	{
+		printf("deleting %s vao, vbo, and ebo\n", Name.c_str());
+		glDeleteVertexArrays(1, &m_VAO);
+		glDeleteBuffers(1, &m_VBO);
+		glDeleteBuffers(1, &m_EBO);
+	}
 
-    void Draw(Shader& shade, bool drawWireframe) override;
+    void Draw(Shader& shader, bool drawWireframe) override;
 
 	glm::vec3 m_HalfLength;
 	

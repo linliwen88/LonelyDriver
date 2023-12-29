@@ -13,7 +13,7 @@
 #include "Shader.h"
 #include <vector>
 
-enum TexType {Diffuse, Specular};
+// enum TexType {Diffuse, Specular};
 
 struct Vertex
 {

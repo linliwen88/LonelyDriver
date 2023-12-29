@@ -14,6 +14,7 @@ class Camera;
 class Shader;
 class Model;
 class Cube;
+class Skybox;
 class Light;
 class Plane;
 
@@ -30,7 +31,7 @@ private:
 	void FinishRender();
 
 	int InitOpenGL();
-	void LoadShaders();
+	void CreateSkybox();
 	void CreateDrawableObjects();
 	void UpdateDeltaTime();
 
@@ -53,6 +54,10 @@ private:
 	// models
 	Model* carModel;
 	Shader* modelShader;
+
+	// skybox
+	Skybox* skybox;
+	Shader* skyboxShader;
 
 	Plane* road;
 

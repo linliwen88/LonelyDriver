@@ -31,6 +31,7 @@
 #include "Shader.h"
 #include "Model.h"
 #include "Cube.h"
+#include "Skybox.h"
 #include "Light.h"
 #include "Plane.h"
 
@@ -57,7 +58,10 @@ App::App(const int width, const int height, const std::string& title) :
 
     // Init OpenGL and run
     InitOpenGL();
-    LoadShaders();
+
+    // create skybox
+    CreateSkybox();
+
     CreateDrawableObjects();
 
     // TODO: add error check before running
@@ -65,13 +69,20 @@ App::App(const int width, const int height, const std::string& title) :
 
     Window::Terminate();
     Physics::CleanUp();
+
+    delete this;
 }
 
 App::~App()
 {
     delete camera;
-    delete carModel;
     delete modelShader;
+    delete lightShader;
+
+    delete carModel;
+    delete lightCube;
+    delete road;
+    delete skybox;
 }
 
 // Set camera view and projection tranformations
@@ -103,23 +114,25 @@ int App::InitOpenGL()
     // configure global opengl state
     glEnable(GL_DEPTH_TEST);
 
-
-    // camera = new Camera(glm::vec3(3.0f, 1.0f, 3.0f));
+    // create camera
     camera = new Camera(glm::vec3(0.0f, 2.0f, 20.0f));
     Window::RegisterCamera(camera);
-
 
     return 0;
 }
 
-void App::LoadShaders()
+void App::CreateSkybox()
 {
-    lightShader = new Shader("shaders/lightSource_vshader.glsl", "shaders/lightSource_fshader.glsl");
-    modelShader = new Shader("shaders/model_load_vshader.glsl", "shaders/model_load_fshader.glsl");
+    skyboxShader = new Shader("shaders/skybox_vshader.glsl", "shaders/skybox_fshader.glsl");
+    skybox = new Skybox("skybox");
 }
 
 void App::CreateDrawableObjects()
 {
+    // load shaders
+    lightShader = new Shader("shaders/lightSource_vshader.glsl", "shaders/lightSource_fshader.glsl");
+    modelShader = new Shader("shaders/model_load_vshader.glsl", "shaders/model_load_fshader.glsl");
+
     // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
     stbi_set_flip_vertically_on_load(true);
 
@@ -187,6 +200,13 @@ void App::Run()
 
         lightCube->Draw(*lightShader, DrawWireframe);
         // PrintVec3(lightCube->Position);
+
+        // render skybox
+        skyboxShader->use();
+        view = glm::mat4(glm::mat3(view)); // remove translation section, only keep rotation section of camera
+        skyboxShader->setMat4("view", view);
+        skyboxShader->setMat4("projection", projection);
+        skybox->Draw(*skyboxShader, DrawWireframe);
 
         FinishRender();
     }

@@ -34,7 +34,7 @@ public:
 		LoadModel(path);
 	}
 
-	~Model() {}
+	~Model() {};
 
 	// void Draw(Shader& shader, bool DrawWireframe);
 	void Draw(Shader& shader, glm::mat4 model, bool DrawWireframe);

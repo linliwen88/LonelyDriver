@@ -1,4 +1,5 @@
 #pragma once
+
 #ifndef _INCLUDE_GLAD_
 #define _INCLUDE_GLAD_
 #include <glad/glad.h>
@@ -15,25 +16,27 @@
 #endif
 
 #include "Drawable.h"
+class Shader;
 
-class Plane : public Drawable
+class Skybox : public Drawable
 {
 public:
-	Plane(std::string _name);
-	~Plane()
+	Skybox(std::string _name);
+	~Skybox()
 	{
-		printf("deleting %s vao, vbo, and ebo\n", Name.c_str());
+		printf("deleting %s vao, vbo, and terxture\n", Name.c_str());
 		glDeleteVertexArrays(1, &m_VAO);
 		glDeleteBuffers(1, &m_VBO);
-		glDeleteBuffers(1, &m_EBO);
+		glDeleteTextures(1, &cubemapTexture);
 	}
 
-	void Draw(Shader& shader, bool drawWireframe) override;
+	void Draw(Shader& shader, bool drawWireframe = false) override;
 
-private:
-	void SetUpPlane();
+protected:
 
+	void SetUpSkybox();
+
+	unsigned int cubemapTexture;
 	unsigned int m_VAO;
 	unsigned int m_VBO;
-	unsigned int m_EBO;
 };
