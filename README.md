@@ -19,7 +19,7 @@
 - 12/28/2023: Draw skybox using cubemap. Created `Skybox` class that derives `Drawable` for special draw calls.
 - Toggle var `DrawWireframe` in `App` class to draw wireframe.  
 
-<img src="./pics/progress_20231228.png" width="200" /><img src="./pics/progress_20231228_2.png" width="200" />
+<img src="./pics/progress_20231228.png" width="400" /><img src="./pics/progress_20231228_2.png" width="400" />
 
 ### TODOs
 - [x] clean way to render wireframes (bounding box)
