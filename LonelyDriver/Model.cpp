@@ -43,8 +43,6 @@ void Model::LoadModel(const std::string& path)
 	directory = path.substr(0, path.find_last_of('/'));
 
 	// process ASSIMP's root node recursively
-	std::cout << "scence number of meshes: " << scene->mNumMeshes << std::endl;
-	std::cout << "scence number of materials: " << scene->mNumMaterials << std::endl;
 	texture_processed = 0;
 	ProcessNode(scene->mRootNode, scene);
 }

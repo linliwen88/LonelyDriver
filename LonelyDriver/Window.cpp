@@ -10,8 +10,8 @@
 
 GLFWwindow* Window::m_window    = nullptr;
 std::string Window::TITLE       = "";
-int*         Window::SCR_WIDTH   = nullptr;
-int*         Window::SCR_HEIGHT  = nullptr;
+int*        Window::SCR_WIDTH   = nullptr;
+int*        Window::SCR_HEIGHT  = nullptr;
 float       Window::lastX       = 400.f / 2.0f;
 float       Window::lastY       = 400.f / 2.0f;
 bool        Window::firstMouse  = true;

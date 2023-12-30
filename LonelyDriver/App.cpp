@@ -61,6 +61,7 @@ App::App(const int width, const int height, const std::string& title) :
 
     // create skybox
     CreateSkybox();
+    CreateTerrain();
 
     CreateDrawableObjects();
 
@@ -98,18 +99,27 @@ void App::StartRender()
 // Check all events and swap front and back buffers, update delta time for frame-dependent physics
 void App::FinishRender()
 {
-    float timeBeforePollEvents = Window::GetTime();
+    if (lastFrame != 0.0f) // First deltaTime is initialized to 1.0f / 60.0f;
+    {
+        deltaTime = Window::GetTime() - lastFrame;
+    }
 
     Window::PollEvents();
     Window::SwapBuffers();
 
-    float timeAfterPollEvents = Window::GetTime();
-    if (lastFrame != 0.0f) // First deltaTime is initialized to 1.0f / 60.0f;
-    {
-        deltaTime = timeBeforePollEvents - lastFrame;
-    }
+    lastFrame = Window::GetTime();
 
-    lastFrame = timeAfterPollEvents;
+    if (oneSec >= 1.0f)
+    {
+        std::clog << "\r" << frameCount / oneSec << " FPS" << std::flush;
+        frameCount = 0;
+        oneSec = 0.f;
+    }
+    else
+    {
+        oneSec += deltaTime;
+        frameCount++;
+    }
 }
 
 int App::InitOpenGL()
@@ -134,6 +144,74 @@ void App::CreateSkybox()
     skybox = new Skybox("skybox");
 }
 
+void App::CreateTerrain()
+{
+    // load height map texture
+    int width, height, nChannels;
+    unsigned char* data = stbi_load("assets/heightmap.png", &width, &height, &nChannels, 0);
+
+    // vertex generation
+    std::vector<float> vertices;
+    float yScale = 64.0f / 256.0f, yShift = 0.0f;  // apply a scale+shift to the height data
+    for (unsigned int i = 0; i < height; i++)
+    {
+        for (unsigned int j = 0; j < width; j++)
+        {
+            // retrieve texel for (i,j) tex coord
+            unsigned char* texel = data + (j + width * i) * nChannels;
+            // raw height at coordinate
+            unsigned char y = texel[0];
+
+            // vertex
+            vertices.push_back(-height / 2.0f + i);       // v.x
+            vertices.push_back((int)y * yScale - yShift); // v.y
+            vertices.push_back(-width / 2.0f + j);        // v.z
+        }
+    }
+
+    stbi_image_free(data);
+
+    // index generation
+    std::vector<unsigned int> indices;
+    for (unsigned int i = 0; i < height - 1; i++)       // for each row a.k.a. each strip
+    {
+        for (unsigned int j = 0; j < width; j++)      // for each column
+        {
+            for (unsigned int k = 0; k < 2; k++)      // for each side of the strip
+            {
+                indices.push_back(j + width * (i + k));
+            }
+        }
+    }
+
+    NUM_STRIPS = height - 1;
+    NUM_VERTS_PER_STRIP = width * 2;
+
+    // register VAO
+    // GLuint terrainVAO, terrainVBO, terrainEBO;
+    glGenVertexArrays(1, &terrainVAO);
+    glBindVertexArray(terrainVAO);
+
+    glGenBuffers(1, &terrainVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, terrainVBO);
+    glBufferData(GL_ARRAY_BUFFER,
+        vertices.size() * sizeof(float),       // size of vertices buffer
+        &vertices[0],                          // pointer to first element
+        GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glGenBuffers(1, &terrainEBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terrainEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+        indices.size() * sizeof(unsigned int), // size of indices buffer
+        &indices[0],                           // pointer to first element
+        GL_STATIC_DRAW);
+
+}
+
 void App::CreateDrawableObjects()
 {
     // load shaders
@@ -145,10 +223,10 @@ void App::CreateDrawableObjects()
 
     // Load car model
     std::string modelPath = "assets/audi/audi.obj";
-    carModel = new Model("car", glm::vec3(0.f, 5.f, 0.f), modelPath.data());
+    carModel = new Model("car", glm::vec3(0.f, 1.f, 0.f), modelPath.data());
 
     // create light cube
-    lightCube = new Light("light", glm::vec3(3.f, 10.f, 0.f));
+    lightCube = new Light("light", glm::vec3(3.f, 2.f, 0.f));
 
     // create plane
     road = new Plane("plane");
@@ -160,7 +238,7 @@ void App::Run()
     glEnable(GL_DEPTH_TEST);
     while (!Window::ShouldClose())
     {
-        // input
+                // input
         Window::ProcessInput(deltaTime);
 
         // calculate physics, update object world poses (position and rotation) and light position
@@ -189,7 +267,7 @@ void App::Run()
 
         DrawWireframe = false;
         // render plane
-        road->Draw(*modelShader, DrawWireframe);
+        // road->Draw(*modelShader, DrawWireframe);
 
         // render the car
         model = glm::mat4(1.0f);
@@ -204,6 +282,23 @@ void App::Run()
 
         lightCube->Draw(*lightShader, DrawWireframe);
         // PrintVec3(lightCube->Position);
+        
+        // render terrain
+        model = glm::mat4(1.0f);
+        lightShader->setMat4("model", model);
+        glBindVertexArray(terrainVAO);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        // render the mesh triangle strip by triangle strip - each row at a time
+        for (unsigned int strip = 0; strip < NUM_STRIPS; ++strip)
+        {
+            glDrawElements(GL_TRIANGLE_STRIP,   // primitive type
+                NUM_VERTS_PER_STRIP, // number of indices to render
+                GL_UNSIGNED_INT,     // index data type
+                (void*)(sizeof(unsigned int)
+                    * NUM_VERTS_PER_STRIP
+                    * strip)); // offset to starting index
+        }
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         // render skybox
         skyboxShader->use();
@@ -213,7 +308,6 @@ void App::Run()
         skybox->Draw(*skyboxShader, DrawWireframe);
 
         FinishRender();
-
     }
 }
 
