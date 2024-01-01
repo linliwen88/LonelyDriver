@@ -179,8 +179,12 @@
     <None Include="shaders\model_load_vshader.glsl" />
     <None Include="shaders\object_fshader.glsl" />
     <None Include="shaders\object_vshader.glsl" />
-    <None Include="skybox_fshader.glsl" />
-    <None Include="skybox_vshader.glsl" />
+    <None Include="shaders\skybox_fshader.glsl" />
+    <None Include="shaders\skybox_vshader.glsl" />
+    <None Include="shaders\terrian_fshader.glsl" />
+    <None Include="shaders\terrian_tcshader.glsl" />
+    <None Include="shaders\terrian_teshader.glsl" />
+    <None Include="shaders\terrian_vshader.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

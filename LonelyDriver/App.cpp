@@ -24,10 +24,10 @@
 
 #include <iostream>
 
-#include "Camera.h"
 #include "Window.h"
 #include "Physics.h"
 
+#include "Camera.h"
 #include "Shader.h"
 #include "Model.h"
 #include "Cube.h"
@@ -35,12 +35,10 @@
 #include "Light.h"
 #include "Plane.h"
 
-
 void PrintVec3(glm::vec3 v)
 {
     std::cout << v.x << ' ' << v.y << ' ' << v.z << std::endl;
 }
-
 
 App::App(const int width, const int height, const std::string& title) :
     SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title), deltaTime(1.0f / 60.0f), lastFrame(0.0f),
@@ -61,6 +59,8 @@ App::App(const int width, const int height, const std::string& title) :
 
     // create skybox
     CreateSkybox();
+
+    // create terrain
     CreateTerrain();
 
     CreateDrawableObjects();
@@ -92,7 +92,7 @@ void App::StartRender()
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    projection = glm::perspective(glm::radians(camera->Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(camera->Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 10000.0f);
     view = camera->GetViewMatrix();
 }
 
@@ -146,70 +146,91 @@ void App::CreateSkybox()
 
 void App::CreateTerrain()
 {
+    tessHeightMapShader = new Shader("shaders/terrian_vshader.glsl", "shaders/terrian_fshader.glsl", nullptr, "shaders/terrian_tcshader.glsl", "shaders/terrian_teshader.glsl");
+
     // load height map texture
+    glGenTextures(1, &terrainTexture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, terrainTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // load image, create texture and generate mipmaps
     int width, height, nChannels;
     unsigned char* data = stbi_load("assets/heightmap.png", &width, &height, &nChannels, 0);
-
-    // vertex generation
-    std::vector<float> vertices;
-    float yScale = 64.0f / 256.0f, yShift = 0.0f;  // apply a scale+shift to the height data
-    for (unsigned int i = 0; i < height; i++)
+    if (data)
     {
-        for (unsigned int j = 0; j < width; j++)
-        {
-            // retrieve texel for (i,j) tex coord
-            unsigned char* texel = data + (j + width * i) * nChannels;
-            // raw height at coordinate
-            unsigned char y = texel[0];
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_SHORT, data);
+        // glGenerateMipmap(GL_TEXTURE_2D);
 
-            // vertex
-            vertices.push_back(-height / 2.0f + i);       // v.x
-            vertices.push_back((int)y * yScale - yShift); // v.y
-            vertices.push_back(-width / 2.0f + j);        // v.z
-        }
+        tessHeightMapShader->setInt("heightMap", 0);
+        std::cout << "Loaded heightmap of size " << height << " x " << width << std::endl;
     }
-
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
     stbi_image_free(data);
 
-    // index generation
-    std::vector<unsigned int> indices;
-    for (unsigned int i = 0; i < height - 1; i++)       // for each row a.k.a. each strip
+
+    // vertex generation
+    std::vector<float> patchVertices;
+
+    for (unsigned i = 0; i <= rez - 1; i++)
     {
-        for (unsigned int j = 0; j < width; j++)      // for each column
+        for (unsigned j = 0; j <= rez - 1; j++)
         {
-            for (unsigned int k = 0; k < 2; k++)      // for each side of the strip
-            {
-                indices.push_back(j + width * (i + k));
-            }
+            patchVertices.push_back(-width / 2.0f + width * i / (float)rez); // v.x
+            patchVertices.push_back(0.0f); // v.y
+            patchVertices.push_back(-height / 2.0f + height * j / (float)rez); // v.z
+            patchVertices.push_back(i / (float)rez); // u
+            patchVertices.push_back(j / (float)rez); // v
+
+            patchVertices.push_back(-width / 2.0f + width * (i + 1) / (float)rez); // v.x
+            patchVertices.push_back(0.0f); // v.y
+            patchVertices.push_back(-height / 2.0f + height * j / (float)rez); // v.z
+            patchVertices.push_back((i + 1) / (float)rez); // u
+            patchVertices.push_back(j / (float)rez); // v
+
+            patchVertices.push_back(-width / 2.0f + width * i / (float)rez); // v.x
+            patchVertices.push_back(0.0f); // v.y
+            patchVertices.push_back(-height / 2.0f + height * (j + 1) / (float)rez); // v.z
+            patchVertices.push_back(i / (float)rez); // u
+            patchVertices.push_back((j + 1) / (float)rez); // v
+
+            patchVertices.push_back(-width / 2.0f + width * (i + 1) / (float)rez); // v.x
+            patchVertices.push_back(0.0f); // v.y
+            patchVertices.push_back(-height / 2.0f + height * (j + 1) / (float)rez); // v.z
+            patchVertices.push_back((i + 1) / (float)rez); // u
+            patchVertices.push_back((j + 1) / (float)rez); // v
         }
     }
+    std::cout << "Loaded " << rez * rez << " patches of 4 control points each" << std::endl;
+    std::cout << "Processing " << rez * rez * 4 << " vertices in vertex shader" << std::endl;
 
-    NUM_STRIPS = height - 1;
-    NUM_VERTS_PER_STRIP = width * 2;
-
-    // register VAO
-    // GLuint terrainVAO, terrainVBO, terrainEBO;
+    GLint MaxPatchVertices = 0;
+    glGetIntegerv(GL_MAX_PATCH_VERTICES, &MaxPatchVertices);
+    printf("Max supported patch vertices %d\n", MaxPatchVertices);
+    glPatchParameteri(GL_PATCH_VERTICES, NUM_PATCH_PTS);
     glGenVertexArrays(1, &terrainVAO);
     glBindVertexArray(terrainVAO);
 
     glGenBuffers(1, &terrainVBO);
     glBindBuffer(GL_ARRAY_BUFFER, terrainVBO);
-    glBufferData(GL_ARRAY_BUFFER,
-        vertices.size() * sizeof(float),       // size of vertices buffer
-        &vertices[0],                          // pointer to first element
-        GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * patchVertices.size(), &patchVertices[0], GL_STATIC_DRAW);
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
-    glGenBuffers(1, &terrainEBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terrainEBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-        indices.size() * sizeof(unsigned int), // size of indices buffer
-        &indices[0],                           // pointer to first element
-        GL_STATIC_DRAW);
-
+    // texCoord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 3));
+    glEnableVertexAttribArray(1);
 }
 
 void App::CreateDrawableObjects()
@@ -236,9 +257,10 @@ void App::Run()
 {
     // render loop
     glEnable(GL_DEPTH_TEST);
+
     while (!Window::ShouldClose())
     {
-                // input
+        // input
         Window::ProcessInput(deltaTime);
 
         // calculate physics, update object world poses (position and rotation) and light position
@@ -279,28 +301,24 @@ void App::Run()
         lightShader->setMat4("model", objectGlobalPoses[lightCube->Name]);
         lightShader->setMat4("view", view);
         lightShader->setMat4("projection", projection);
-
         lightCube->Draw(*lightShader, DrawWireframe);
         // PrintVec3(lightCube->Position);
-        
-        // render terrain
-        model = glm::mat4(1.0f);
-        lightShader->setMat4("model", model);
-        glBindVertexArray(terrainVAO);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        // render the mesh triangle strip by triangle strip - each row at a time
-        for (unsigned int strip = 0; strip < NUM_STRIPS; ++strip)
-        {
-            glDrawElements(GL_TRIANGLE_STRIP,   // primitive type
-                NUM_VERTS_PER_STRIP, // number of indices to render
-                GL_UNSIGNED_INT,     // index data type
-                (void*)(sizeof(unsigned int)
-                    * NUM_VERTS_PER_STRIP
-                    * strip)); // offset to starting index
-        }
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        // render skybox
+        // render terrain
+        tessHeightMapShader->use();
+        model = glm::mat4(1.0f);
+        tessHeightMapShader->setMat4("model", model);
+        tessHeightMapShader->setMat4("view", view);
+        tessHeightMapShader->setMat4("projection", projection);
+        // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glBindVertexArray(terrainVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, terrainTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+        glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
+        glBindVertexArray(0);
+        // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        // render skybox last for special view matrix
         skyboxShader->use();
         view = glm::mat4(glm::mat3(view)); // remove translation section, only keep rotation section of camera
         skyboxShader->setMat4("view", view);

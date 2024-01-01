@@ -118,10 +118,22 @@
     <None Include="shaders\model_load_vshader.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="skybox_fshader.glsl">
+    <None Include="shaders\terrian_fshader.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="skybox_vshader.glsl">
+    <None Include="shaders\terrian_tcshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\terrian_teshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\terrian_vshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\skybox_fshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\skybox_vshader.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

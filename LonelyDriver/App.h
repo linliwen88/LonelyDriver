@@ -68,11 +68,12 @@ private:
 	std::unordered_map<std::string, glm::mat4> objectGlobalPoses;
 	bool DrawWireframe;
 
+	const unsigned int NUM_PATCH_PTS = 4;
+	const unsigned rez = 20;
 	unsigned int terrainVAO;
 	unsigned int terrainVBO;
-	unsigned int terrainEBO;
-	unsigned int NUM_STRIPS;
-	unsigned int NUM_VERTS_PER_STRIP;
+	unsigned int terrainTexture;
+	Shader* tessHeightMapShader;
 
 	float oneSec = 0.f;
 	int frameCount = 0;
