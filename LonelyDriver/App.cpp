@@ -41,7 +41,7 @@ void PrintVec3(glm::vec3 v)
 }
 
 App::App(const int width, const int height, const std::string& title) :
-    SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title), deltaTime(1.0f / 60.0f), lastFrame(0.0f),
+    SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title), deltaTime(1.0f / 60.0f), lastTime(0.0f),
     camera(nullptr), lightCube(nullptr), lightShader(nullptr),
     carModel(nullptr), modelShader(nullptr),
     road(nullptr),
@@ -86,6 +86,39 @@ App::~App()
     delete skybox;
 }
 
+void App::UpdateDeltaTimeAndPhysics()
+{
+    // Semi - fixed timestep
+    float newTime = Window::GetTime();
+    float FrameTime = newTime - lastTime;
+    deltaTime = FrameTime;
+    lastTime = newTime;
+
+    // update physics with constant tick rate
+    while (FrameTime > 0.f)
+    {
+        float physics_DeltaTime = fmin(FrameTime, physics_StepTime);
+
+        // calculate physics, update object world poses (position and rotation) and light position
+        Physics::Step(physics_DeltaTime, objectGlobalPoses, lightCube);
+
+        FrameTime -= physics_DeltaTime;
+    }
+
+    // display FPS
+    if (oneSec >= 1.0f)
+    {
+        Window::SetWindowTitle(frameCount / oneSec);
+        oneSec = 0.0f;
+        frameCount = 1;
+    }
+    else
+    {
+        oneSec += deltaTime;
+        frameCount++;
+    }
+}
+
 // Set camera view and projection tranformations
 void App::StartRender()
 {
@@ -99,35 +132,13 @@ void App::StartRender()
 // Check all events and swap front and back buffers, update delta time for frame-dependent physics
 void App::FinishRender()
 {
-    if (lastFrame == 0.0f) // First deltaTime is initialized to 1.0f / 60.0f;
-    {
-        deltaTime = 1.0f / 60.f;
-    }
-    else
-    {
-        deltaTime = Window::GetTime() - lastFrame;
-    }
-
+    float pauseTimeStart = Window::GetTime();
+    
     Window::PollEvents();
     Window::SwapBuffers();
 
-    lastFrame = Window::GetTime();
-
-    // display FPS
-    if (oneSec >= 1.0f)
-    {
-        std::clog << "\r" << frameCount / oneSec << " FPS" << std::flush;
-        frameCount = 0;
-        oneSec = 0.f;
-    }
-    else
-    {
-        oneSec += deltaTime;
-        frameCount++;
-    }
-
-    // threshold deltaTime for small PhysX timestep
-    deltaTime = (deltaTime >= 0.1f) ? 1.0 / 60.f : deltaTime;
+    float puaseTime = Window::GetTime() - pauseTimeStart;
+    if (puaseTime > 0.2f) lastTime += puaseTime;
 }
 
 int App::InitOpenGL()
@@ -261,16 +272,16 @@ void App::CreateDrawableObjects()
 void App::Run()
 {
     // render loop
+    lastTime = Window::GetTime();
     glEnable(GL_DEPTH_TEST);
 
     while (!Window::ShouldClose())
     {
+        UpdateDeltaTimeAndPhysics();
+
         // input
         static int carDirection = 0;
         Window::ProcessInput(deltaTime, carDirection);
-
-        // calculate physics, update object world poses (position and rotation) and light position
-        Physics::Step(deltaTime, objectGlobalPoses, lightCube);
 
         StartRender();
         

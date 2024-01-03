@@ -12,6 +12,8 @@
 #endif
 
 #include <iostream> 
+#include <iomanip>
+#include <sstream>
 
 class Camera;
 
@@ -25,6 +27,12 @@ public:
 	static bool		ShouldClose()	{ return glfwWindowShouldClose(m_window); }
 	static void		SwapBuffers()	{		 glfwSwapBuffers(m_window); }
 	static void		RegisterCamera(Camera* _camera) { camera = _camera; }
+	static void		SetWindowTitle(float fps) 
+	{
+		std::stringstream ss;
+		ss << std::fixed << std::setprecision(2) << fps;
+		glfwSetWindowTitle(m_window, (TITLE + "  FPS: " + ss.str()).c_str());
+	}
 
 	static int	Init(int* scrWidthPtr, int* scrHeightPtr, const std::string& name);
 	static void ProcessInput(float deltaTime, int& carDirection);

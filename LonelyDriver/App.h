@@ -27,6 +27,7 @@ public:
 	void Run();
 
 private:
+	void UpdateDeltaTimeAndPhysics();
 	void StartRender();
 	void FinishRender();
 
@@ -42,7 +43,7 @@ private:
 
 	// movement speed
 	float deltaTime; // time between current frame and last frame
-	float lastFrame; // time of last frame
+	float lastTime; // time of last frame
 
 	// camera
 	Camera* camera;
@@ -77,4 +78,9 @@ private:
 
 	float oneSec = 0.f;
 	int frameCount = 0;
+
+	// physics timing
+	// bool physics_DoStep;
+	// float physics_TimeCount;
+	const float physics_StepTime = 1.0f / 60.0f;
 };

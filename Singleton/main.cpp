@@ -28,7 +28,7 @@ bool firstMouse = true;
 
 // timing
 float deltaTime = 0.0f;
-float lastFrame = 0.0f;
+float lastTime = 0.0f;
 
 int main()
 {
@@ -94,8 +94,8 @@ int main()
         // per-frame time logic
         // --------------------
         float currentFrame = static_cast<float>(glfwGetTime());
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+        deltaTime = currentFrame - lastTime;
+        lastTime = currentFrame;
 
         // input
         // -----
