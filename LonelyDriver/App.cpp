@@ -99,7 +99,11 @@ void App::StartRender()
 // Check all events and swap front and back buffers, update delta time for frame-dependent physics
 void App::FinishRender()
 {
-    if (lastFrame != 0.0f) // First deltaTime is initialized to 1.0f / 60.0f;
+    if (lastFrame == 0.0f) // First deltaTime is initialized to 1.0f / 60.0f;
+    {
+        deltaTime = 1.0f / 60.f;
+    }
+    else
     {
         deltaTime = Window::GetTime() - lastFrame;
     }
@@ -109,6 +113,7 @@ void App::FinishRender()
 
     lastFrame = Window::GetTime();
 
+    // display FPS
     if (oneSec >= 1.0f)
     {
         std::clog << "\r" << frameCount / oneSec << " FPS" << std::flush;
@@ -120,6 +125,9 @@ void App::FinishRender()
         oneSec += deltaTime;
         frameCount++;
     }
+
+    // threshold deltaTime for small PhysX timestep
+    deltaTime = (deltaTime >= 0.1f) ? 1.0 / 60.f : deltaTime;
 }
 
 int App::InitOpenGL()
@@ -155,8 +163,7 @@ void App::CreateTerrain()
     // set the texture wrapping parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    // set texture filtering parameters, didn't use mipmap for heightmap because Mip levels won't be selected automatically with derivatives like in the fragment shader. (learn OpenGL)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -166,8 +173,6 @@ void App::CreateTerrain()
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_SHORT, data);
-        // glGenerateMipmap(GL_TEXTURE_2D);
 
         tessHeightMapShader->setInt("heightMap", 0);
         std::cout << "Loaded heightmap of size " << height << " x " << width << std::endl;
@@ -240,14 +245,14 @@ void App::CreateDrawableObjects()
     modelShader = new Shader("shaders/model_load_vshader.glsl", "shaders/model_load_fshader.glsl");
 
     // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
-    stbi_set_flip_vertically_on_load(true);
+    stbi_set_flip_vertically_on_load(false);
 
     // Load car model
-    std::string modelPath = "assets/audi/audi.obj";
+    std::string modelPath = "assets/good-dirty-car/good-dirty-car-2.fbx";
     carModel = new Model("car", glm::vec3(0.f, 1.f, 0.f), modelPath.data());
 
     // create light cube
-    lightCube = new Light("light", glm::vec3(3.f, 2.f, 0.f));
+    lightCube = new Light("light", glm::vec3(3.f, 10.f, 0.f));
 
     // create plane
     road = new Plane("plane");
@@ -261,7 +266,8 @@ void App::Run()
     while (!Window::ShouldClose())
     {
         // input
-        Window::ProcessInput(deltaTime);
+        static int carDirection = 0;
+        Window::ProcessInput(deltaTime, carDirection);
 
         // calculate physics, update object world poses (position and rotation) and light position
         Physics::Step(deltaTime, objectGlobalPoses, lightCube);
@@ -287,14 +293,14 @@ void App::Run()
         modelShader->setVec3("lightPosition", lightCube->Position);
         modelShader->setVec3("viewPos", camera->Position);
 
-        DrawWireframe = false;
+        DrawWireframe = true;
         // render plane
         // road->Draw(*modelShader, DrawWireframe);
 
         // render the car
         model = glm::mat4(1.0f);
         model = model * objectGlobalPoses[carModel->Name];
-        carModel->Draw(*modelShader, model, DrawWireframe);
+        carModel->Draw(*modelShader, model, DrawWireframe, carDirection);
 
         // render light source
         lightShader->use();

@@ -16,6 +16,7 @@ uniform vec3 lightColor;
 
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
+uniform sampler2D texture_normal1;
 
 
 void main()
@@ -32,12 +33,12 @@ void main()
     vec3 diffuse = lightDiffuse * diff * texture(texture_diffuse1, TexCoords).rgb;  
     
     // specular
-    float materialShininess = 0.5;
+    float materialShininess = 0.9;
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);  
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), materialShininess);
-    vec3 specular = lightSpecular * spec * texture(texture_specular1, TexCoords).rgb;  
-        
+    vec3 specular = lightSpecular * spec * vec3(texture(texture_specular1, TexCoords).r);
+
     vec3 result = ambient + diffuse + specular;
     FragColor = vec4(result, 1.0);
 }

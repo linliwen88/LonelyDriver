@@ -13,18 +13,20 @@
 //	}
 //}
 
-void Model::Draw(Shader& shader, glm::mat4 model, bool DrawWireframe)
+void Model::Draw(Shader& shader, glm::mat4& modelMat, bool DrawWireframe, const int& wheelDirection)
 {
 	if (DrawWireframe)
 	{
-		shader.setMat4("model", model);
+		shader.setMat4("model", modelMat);
 		Cube::Draw(shader, DrawWireframe);
 	}
-	model = glm::translate(model, draw_offset);
-	shader.setMat4("model", model);
+	modelMat = glm::translate(modelMat, draw_offset);
+	modelMat = glm::scale(modelMat, glm::vec3(0.01));
+	shader.setMat4("model", modelMat);
+
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{
-		meshes[i].Draw(shader);
+		meshes[i].Draw(shader, modelMat, wheelDirection);
 	}
 }
 
@@ -66,6 +68,7 @@ void Model::ProcessNode(aiNode* node, const aiScene* scene)
 
 Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
+	printf("mesh name: %s\n", mesh->mName.C_Str());
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
@@ -126,9 +129,15 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
 		std::vector<Texture> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+
+		std::vector<Texture> normalMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+
+		std::vector<Texture> emissiveMaps = LoadMaterialTextures(material, aiTextureType_EMISSIVE, "texture_emissive");
+		textures.insert(textures.end(), emissiveMaps.begin(), emissiveMaps.end());
 	}
 
-	return Mesh(vertices, indices, textures);
+	return Mesh(mesh->mName.C_Str(), vertices, indices, textures);
 }
 
 std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
@@ -194,6 +203,7 @@ unsigned int TextureFromFile(const char* path, const std::string& directory, boo
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		stbi_image_free(data);
+
 	}
 	else
 	{

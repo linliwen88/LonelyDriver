@@ -34,6 +34,7 @@ Apply Phyx vehicle class onto car model. User input control acceleration and bra
 ### TODOs
 - [x] clean way to render wireframes (bounding box)
 - [ ] terrain, compare CPU vs GPU generation peformance (speed, memory)
+- [ ] add normal mapping in model shder
 - [ ] vehicle physics and user control 
 - [ ] change pointers to smart pointers
 - [ ] should I move all dependencies (imgui, glfw, glm...) into solution folder?

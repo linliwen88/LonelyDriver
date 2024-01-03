@@ -1,19 +1,21 @@
 #include "Mesh.h"
 
-Mesh::Mesh(std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture> _textures):
+Mesh::Mesh(const char* _name, std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture> _textures):
+	Name(std::string(_name)),
 	vertices(_vertices), indices(_indices), textures(_textures),
 	VAO(-1), VBO(-1), EBO(-1)
 {
 	SetUpMesh();
 }
 
-void Mesh::Draw(Shader& shader)
+void Mesh::Draw(Shader& shader, glm::mat4& modelMat, const int& wheelDirection)
 {
 	// bind appropriate textures
 	unsigned int diffuseNr = 1;
 	unsigned int specularNr = 1;
 	unsigned int normalNr = 1;
 	unsigned int heightNr = 1;
+
 	for (unsigned int i = 0; i < textures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
@@ -35,6 +37,14 @@ void Mesh::Draw(Shader& shader)
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
 
+	glm::mat4 model = modelMat;
+
+	if (this->Name.find("front_wheel") != std::string::npos)
+	{
+		if(wheelDirection == -1) model = glm::rotate(model, glm::radians(10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		else if(wheelDirection == 1) model = glm::rotate(model, glm::radians(-10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	}
+	shader.setMat4("model", model);
 	// draw mesh
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);

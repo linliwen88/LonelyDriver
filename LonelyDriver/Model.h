@@ -37,7 +37,7 @@ public:
 	~Model() {};
 
 	// void Draw(Shader& shader, bool DrawWireframe);
-	void Draw(Shader& shader, glm::mat4 model, bool DrawWireframe);
+	void Draw(Shader& shader, glm::mat4& modelMat, bool DrawWireframe, const int& carDirection);
 private:
 	int texture_processed = 0;
 	std::vector<Mesh> meshes;

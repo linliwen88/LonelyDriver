@@ -10,6 +10,11 @@
 #include <glm/glm.hpp>
 #endif
 
+#ifndef __INCLUDE_GLM_MATRIX_TRANSFORM_HPP__
+#define __INCLUDE_GLM_MATRIX_TRANSFORM_HPP__
+#include <glm/gtc/matrix_transform.hpp>
+#endif
+
 #include "Shader.h"
 #include <vector>
 
@@ -32,15 +37,15 @@ struct Texture
 class Mesh
 {
 public:
+	std::string Name;
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
 
-	Mesh(std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture> _textures);
-	void Draw(Shader& shader);
+	Mesh(const char* _name, std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture> _textures);
+	void Draw(Shader& shader, glm::mat4& modelMat, const int& wheelDirection);
 
 private:
 	unsigned int VAO, VBO, EBO;
-
 	void SetUpMesh();
 };

@@ -62,7 +62,7 @@ int Window::Init(int* scrWidthPtr, int* scrHeightPtr, const std::string& title)
     return 0;
 }
 
-void Window::ProcessInput(float deltaTime)
+void Window::ProcessInput(float deltaTime, int& carDirection)
 {
     if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(m_window, true);
@@ -74,6 +74,15 @@ void Window::ProcessInput(float deltaTime)
         camera->ProcessKeyboard(LEFT, deltaTime);
     if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS)
         camera->ProcessKeyboard(RIGHT, deltaTime);
+
+    // control vehicle
+    if (glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        carDirection = -1;
+    if (glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        carDirection = 1;
+    if (glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_RELEASE && glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_RELEASE)
+        carDirection = 0;
+
 }
 
 void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height)

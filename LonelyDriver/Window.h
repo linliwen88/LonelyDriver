@@ -27,7 +27,7 @@ public:
 	static void		RegisterCamera(Camera* _camera) { camera = _camera; }
 
 	static int	Init(int* scrWidthPtr, int* scrHeightPtr, const std::string& name);
-	static void ProcessInput(float deltaTime);
+	static void ProcessInput(float deltaTime, int& carDirection);
 
 private:
 	Window() {}
