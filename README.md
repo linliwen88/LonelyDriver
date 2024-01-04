@@ -1,5 +1,5 @@
 # LonelyDriver
-### Progress log
+### Dev log
 - 12/13/2023: Initiate project
 - 12/14/2023: Created singleton Window class
 - 12/15/2023: Render car model
@@ -23,9 +23,9 @@
 
 - 12/31/2023: Generated terrain using height map with Tesselation shader.
 
-<img src="./pics/progress_20231230_CPUterrain.png" width="400" /><img src="./pics/progress_20231230_GPUterrain.png" width="400" />
+<img src="./pics/progress_20231230_CPUterrain.png" width="400" />
 
-- 1/3/2024: changed car model (fixed missing textures) and use semi-fixed time step for render loop and physics step stability. 
+- 1/3/2024: changed car model (fixed missing textures) and use [semi-fixed time step](https://gafferongames.com/post/fix_your_timestep/) for render loop and physics step stability.
 
 <img src="./pics/progress_20240103.gif" width="400" />
 
