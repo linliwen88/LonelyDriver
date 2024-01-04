@@ -21,7 +21,7 @@ void Model::Draw(Shader& shader, glm::mat4& modelMat, bool DrawWireframe, const 
 		Cube::Draw(shader, DrawWireframe);
 	}
 	modelMat = glm::translate(modelMat, draw_offset);
-	modelMat = glm::scale(modelMat, glm::vec3(0.01));
+	// modelMat = glm::scale(modelMat, glm::vec3(0.01));
 	shader.setMat4("model", modelMat);
 
 	for (unsigned int i = 0; i < meshes.size(); i++)

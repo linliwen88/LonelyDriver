@@ -259,7 +259,7 @@ void App::CreateDrawableObjects()
     stbi_set_flip_vertically_on_load(false);
 
     // Load car model
-    std::string modelPath = "assets/good-dirty-car/good-dirty-car-2.fbx";
+    std::string modelPath = "assets/good-dirty-car/good-dirty-car.obj";
     carModel = new Model("car", glm::vec3(0.f, 1.f, 0.f), modelPath.data());
 
     // create light cube
@@ -304,7 +304,7 @@ void App::Run()
         modelShader->setVec3("lightPosition", lightCube->Position);
         modelShader->setVec3("viewPos", camera->Position);
 
-        DrawWireframe = true;
+        DrawWireframe = false;
         // render plane
         // road->Draw(*modelShader, DrawWireframe);
 
@@ -327,13 +327,13 @@ void App::Run()
         tessHeightMapShader->setMat4("model", model);
         tessHeightMapShader->setMat4("view", view);
         tessHeightMapShader->setMat4("projection", projection);
-        // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glBindVertexArray(terrainVAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, terrainTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
         glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
         glBindVertexArray(0);
-        // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         // render skybox last for special view matrix
         skyboxShader->use();
