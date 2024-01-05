@@ -113,6 +113,7 @@ static physx::PxVec3 glmVec3ToPhysXVec3(const glm::vec3& vec3)
 
 static glm::mat4 AssimpMat4ToglmMat4(const aiMatrix4x4& mat4)
 {
+    // Inverse Assimp matrix (row-major) and set to glm matrix (column-major).
     glm::mat4 newMat;
 
     newMat[0][0] = mat4[0][0];

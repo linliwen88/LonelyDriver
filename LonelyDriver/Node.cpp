@@ -13,7 +13,7 @@ Node::~Node()
 	}
 }
 
-void Node::Draw(Shader& shader, glm::mat4& modelMat, const int& wheelDirection)
+void Node::Draw(Shader& shader, glm::mat4 modelMat, const int& wheelDirection)
 {
 	// draw meshes of this node
 	int size = mMeshes.size();

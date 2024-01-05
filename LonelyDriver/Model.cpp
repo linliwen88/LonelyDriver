@@ -28,16 +28,16 @@ void Model::PrintNodeTree()
 	}
 }
 
-void Model::Draw(Shader& shader, glm::mat4& modelMat, bool DrawWireframe, const int& wheelDirection)
+void Model::Draw(Shader& shader, glm::mat4 modelMat, bool DrawWireframe, const int& wheelDirection)
 {
 	if (DrawWireframe)
 	{
 		shader.setMat4("model", modelMat);
 		Cube::Draw(shader, DrawWireframe);
 	}
-	// modelMat = glm::translate(modelMat, draw_offset);
+	modelMat = glm::translate(modelMat, draw_offset);
 	modelMat = glm::scale(modelMat, glm::vec3(0.01));
-	shader.setMat4("model", modelMat);
+	// shader.setMat4("model", modelMat);
 
 	for (unsigned int i = 0; i < rootNode->mChildNodes.size(); i++)
 	{
@@ -76,6 +76,7 @@ void Model::ProcessNode(aiNode* node, const aiScene* scene, Node* parentNode)
 	currNode->mTransformation = AssimpMat4ToglmMat4(node->mTransformation);
 	if (parentNode == nullptr) 
 	{
+		// set the parent node
 		rootNode = currNode;
 	}
 	else

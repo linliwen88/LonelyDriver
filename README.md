@@ -29,10 +29,10 @@
 
 <img src="./pics/progress_20240103.gif" width="400" />
 
-- 1/4/2024 Skeletal animation (skinning)
-Skeletal animation (skinning) is the procss of calculating the transformations (traslation, rotation) that must be applied on the vertices due to the movement of the bone. 
+- 1/4/2024 Import and draw fbx model recursively
+This is for animating wheel direction when turing.
 
-<img src="./pics/progress_20231230_CPUterrain.png" width="400" />
+<img src="./pics/progress_20240104.gif" width="400" />
 
 
 ### Next work

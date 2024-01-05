@@ -43,7 +43,7 @@ public:
 	std::vector<Texture> textures;
 
 	Mesh(const char* _name, std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture> _textures);
-	void Draw(Shader& shader, glm::mat4& modelMat, const int& wheelDirection);
+	void Draw(Shader& shader, glm::mat4 modelMat, const int& wheelDirection);
 
 private:
 	unsigned int VAO, VBO, EBO;

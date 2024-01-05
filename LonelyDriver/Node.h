@@ -29,7 +29,7 @@ public:
 
 	glm::mat4 mTransformation;
 
-	void Draw(Shader& shader, glm::mat4& modelMat, const int& wheelDirection);
+	void Draw(Shader& shader, glm::mat4 modelMat, const int& wheelDirection);
 	void AddChild(Node* node) { mChildNodes.push_back(node); }
 	void PrintName() {
 		std::cout << mName << std::endl;

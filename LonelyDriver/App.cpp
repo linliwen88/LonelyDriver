@@ -260,7 +260,7 @@ void App::CreateDrawableObjects()
 
     // Load car model
     std::string modelPath = "assets/good-dirty-car/car.fbx";
-    carModel = new Model("car", glm::vec3(0.f, 1.f, 0.f), modelPath.data());
+    carModel = new Model("car", glm::vec3(0.f, 5.f, 0.f), modelPath.data());
     // carModel->PrintNodeTree();
 
     // create light cube
@@ -321,13 +321,13 @@ void App::Run()
         modelShader->setVec3("lightPosition", lightCube->Position);
         modelShader->setVec3("viewPos", camera->Position);
 
-        DrawWireframe = true;
+        DrawWireframe = false;
         // render plane
         road->Draw(*modelShader, DrawWireframe);
 
         // render the car
         model = glm::mat4(1.0f);
-        // model = model * objectGlobalPoses[carModel->Name];
+        model = model * objectGlobalPoses[carModel->Name];
         carModel->Draw(*modelShader, model, DrawWireframe, carDirection);
 
         // render light source

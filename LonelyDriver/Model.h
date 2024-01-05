@@ -30,7 +30,7 @@ unsigned int TextureFromFile(const char* path, const std::string& directory, boo
 class Model : public Cube
 {
 public:
-	Model(std::string _name, glm::vec3 _position, char* path) : Cube(_name, _position, 1.5f, .875f, 3.f), 
+	Model(std::string _name, glm::vec3 _position, char* path) : Cube(_name, _position, 1.0f, .875f, 3.f), 
 																rootNode(nullptr), draw_offset(glm::vec3(0.0f, -0.875f, 0.0f))
 	{
 		LoadModel(path);
@@ -39,7 +39,7 @@ public:
 	~Model() {};
 
 	// void Draw(Shader& shader, bool DrawWireframe);
-	void Draw(Shader& shader, glm::mat4& modelMat, bool DrawWireframe, const int& carDirection);
+	void Draw(Shader& shader, glm::mat4 modelMat, bool DrawWireframe, const int& carDirection);
 	void PrintNodeTree();
 
 private:

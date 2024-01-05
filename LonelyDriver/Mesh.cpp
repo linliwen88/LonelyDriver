@@ -32,7 +32,7 @@ Mesh::Mesh(const char* _name, std::vector<Vertex> _vertices, std::vector<unsigne
 	glBindVertexArray(0);
 }
 
-void Mesh::Draw(Shader& shader, glm::mat4& modelMat, const int& wheelDirection)
+void Mesh::Draw(Shader& shader, glm::mat4 modelMat, const int& wheelDirection)
 {
 	// bind appropriate textures
 	unsigned int diffuseNr = 1;
@@ -65,8 +65,8 @@ void Mesh::Draw(Shader& shader, glm::mat4& modelMat, const int& wheelDirection)
 
 	if (this->Name.find("front_wheel") != std::string::npos)
 	{
-		if(wheelDirection == -1) model = glm::rotate(model, glm::radians(10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		else if(wheelDirection == 1) model = glm::rotate(model, glm::radians(-10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		if(wheelDirection == -1) model = glm::rotate(model, glm::radians(15.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		else if(wheelDirection == 1) model = glm::rotate(model, glm::radians(-15.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	}
 	shader.setMat4("model", model);
 	// draw mesh
