@@ -1,4 +1,10 @@
 #include "Model.h"
+#include "Node.h"
+
+#ifndef __INCLUDE_CONVERTER__
+#define __INCLUDE_CONVERTER__
+#include "Converter.h"
+#endif
 
 #ifndef __INCLUDE_STB_IMAGE__
 #define __INCLUDE_STB_IMAGE__
@@ -13,6 +19,15 @@
 //	}
 //}
 
+void Model::PrintNodeTree()
+{
+	std::cout << rootNode->mName << std::endl;
+	for (int i = 0; i < rootNode->mChildNodes.size(); i++)
+	{
+		rootNode->mChildNodes[i]->PrintName();
+	}
+}
+
 void Model::Draw(Shader& shader, glm::mat4& modelMat, bool DrawWireframe, const int& wheelDirection)
 {
 	if (DrawWireframe)
@@ -20,14 +35,19 @@ void Model::Draw(Shader& shader, glm::mat4& modelMat, bool DrawWireframe, const 
 		shader.setMat4("model", modelMat);
 		Cube::Draw(shader, DrawWireframe);
 	}
-	modelMat = glm::translate(modelMat, draw_offset);
-	// modelMat = glm::scale(modelMat, glm::vec3(0.01));
+	// modelMat = glm::translate(modelMat, draw_offset);
+	modelMat = glm::scale(modelMat, glm::vec3(0.01));
 	shader.setMat4("model", modelMat);
 
-	for (unsigned int i = 0; i < meshes.size(); i++)
+	for (unsigned int i = 0; i < rootNode->mChildNodes.size(); i++)
+	{
+		rootNode->mChildNodes[i]->Draw(shader, modelMat, wheelDirection);
+	}
+
+	/*for (unsigned int i = 0; i < meshes.size(); i++)
 	{
 		meshes[i].Draw(shader, modelMat, wheelDirection);
-	}
+	}*/
 }
 
 void Model::LoadModel(const std::string& path)
@@ -46,29 +66,42 @@ void Model::LoadModel(const std::string& path)
 
 	// process ASSIMP's root node recursively
 	texture_processed = 0;
-	ProcessNode(scene->mRootNode, scene);
+	// rootNode = new Node("root");
+	ProcessNode(scene->mRootNode, scene, rootNode);
 }
 
-void Model::ProcessNode(aiNode* node, const aiScene* scene)
+void Model::ProcessNode(aiNode* node, const aiScene* scene, Node* parentNode)
 {
+	Node* currNode = new Node(node->mName.C_Str());
+	currNode->mTransformation = AssimpMat4ToglmMat4(node->mTransformation);
+	if (parentNode == nullptr) 
+	{
+		rootNode = currNode;
+	}
+	else
+	{
+		parentNode->AddChild(currNode);
+	}
+	std::cout << "Processing node: " << node->mName.C_Str() << std::endl;
+
 	// process all the node's meshes (if any)
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		meshes.push_back(ProcessMesh(mesh, scene));
+		// meshes.push_back(ProcessMesh(mesh, scene));
+		currNode->mMeshes.push_back(ProcessMesh(mesh, scene));
 	}
 
 	// then do the same for each of its children
 	for (unsigned int i = 0; i < node->mNumChildren; i++)
 	{
-		ProcessNode(node->mChildren[i], scene);
+		ProcessNode(node->mChildren[i], scene, currNode);
 	}
-
 }
 
 Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
-	printf("mesh name: %s\n", mesh->mName.C_Str());
+	// printf("mesh name: %s\n", mesh->mName.C_Str());
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;

@@ -23,13 +23,15 @@
 #include "Cube.h";
 #include "Mesh.h"
 class Shader;
+class Node;
 
 unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma = false);
 
 class Model : public Cube
 {
 public:
-	Model(std::string _name, glm::vec3 _position, char* path) : Cube(_name, _position, 1.5f, .875f, 3.f), draw_offset(glm::vec3(0.0f, -0.875f, 0.0f))
+	Model(std::string _name, glm::vec3 _position, char* path) : Cube(_name, _position, 1.5f, .875f, 3.f), 
+																rootNode(nullptr), draw_offset(glm::vec3(0.0f, -0.875f, 0.0f))
 	{
 		LoadModel(path);
 	}
@@ -38,7 +40,10 @@ public:
 
 	// void Draw(Shader& shader, bool DrawWireframe);
 	void Draw(Shader& shader, glm::mat4& modelMat, bool DrawWireframe, const int& carDirection);
+	void PrintNodeTree();
+
 private:
+	Node* rootNode;
 	int texture_processed = 0;
 	std::vector<Mesh> meshes;
 	std::string directory;
@@ -46,7 +51,7 @@ private:
 	glm::vec3 draw_offset; // the offset to translate the origin of model to match physX bounding box. Draw wireframe to see effect 
 
 	void LoadModel(const std::string& path);
-	void ProcessNode(aiNode* node, const aiScene* scene);
+	void ProcessNode(aiNode* node, const aiScene* scene, Node* currNode);
 	Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
 
 	std::vector<Texture> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);

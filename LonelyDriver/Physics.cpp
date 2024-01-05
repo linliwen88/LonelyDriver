@@ -1,5 +1,10 @@
 #include "Physics.h"
+
+#ifndef __INCLUDE_CONVERTER__
+#define __INCLUDE_CONVERTER__
 #include "Converter.h"
+#endif
+
 #include "Light.h"
 #include "Drawable.h"
 

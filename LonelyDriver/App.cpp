@@ -106,7 +106,7 @@ void App::UpdateDeltaTimeAndPhysics()
     }
 
     // display FPS
-    if (oneSec >= 1.0f)
+    if (oneSec > 1.0f)
     {
         Window::SetWindowTitle(frameCount / oneSec);
         oneSec = 0.0f;
@@ -259,14 +259,31 @@ void App::CreateDrawableObjects()
     stbi_set_flip_vertically_on_load(false);
 
     // Load car model
-    std::string modelPath = "assets/good-dirty-car/good-dirty-car.obj";
+    std::string modelPath = "assets/good-dirty-car/car.fbx";
     carModel = new Model("car", glm::vec3(0.f, 1.f, 0.f), modelPath.data());
+    // carModel->PrintNodeTree();
 
     // create light cube
     lightCube = new Light("light", glm::vec3(3.f, 10.f, 0.f));
 
     // create plane
     road = new Plane("plane");
+}
+
+void App::DrawTerrain()
+{
+    tessHeightMapShader->use();
+    glm::mat4 model = glm::mat4(1.0f);
+    tessHeightMapShader->setMat4("model", model);
+    tessHeightMapShader->setMat4("view", view);
+    tessHeightMapShader->setMat4("projection", projection);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glBindVertexArray(terrainVAO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, terrainTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+    glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
+    glBindVertexArray(0);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void App::Run()
@@ -304,13 +321,13 @@ void App::Run()
         modelShader->setVec3("lightPosition", lightCube->Position);
         modelShader->setVec3("viewPos", camera->Position);
 
-        DrawWireframe = false;
+        DrawWireframe = true;
         // render plane
-        // road->Draw(*modelShader, DrawWireframe);
+        road->Draw(*modelShader, DrawWireframe);
 
         // render the car
         model = glm::mat4(1.0f);
-        model = model * objectGlobalPoses[carModel->Name];
+        // model = model * objectGlobalPoses[carModel->Name];
         carModel->Draw(*modelShader, model, DrawWireframe, carDirection);
 
         // render light source
@@ -322,18 +339,7 @@ void App::Run()
         // PrintVec3(lightCube->Position);
 
         // render terrain
-        tessHeightMapShader->use();
-        model = glm::mat4(1.0f);
-        tessHeightMapShader->setMat4("model", model);
-        tessHeightMapShader->setMat4("view", view);
-        tessHeightMapShader->setMat4("projection", projection);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glBindVertexArray(terrainVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, terrainTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
-        glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
-        glBindVertexArray(0);
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        // DrawTerrain();
 
         // render skybox last for special view matrix
         skyboxShader->use();

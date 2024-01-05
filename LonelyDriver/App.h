@@ -35,6 +35,7 @@ private:
 	void CreateSkybox();
 	void CreateTerrain();
 	void CreateDrawableObjects();
+	void DrawTerrain();
 
 	// application informations
 	int SCR_WIDTH;
