@@ -38,14 +38,12 @@ class Mesh
 {
 public:
 	std::string Name;
-	// std::vector<Vertex> vertices;
-	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
 
 	Mesh(const char* _name, std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture> _textures);
-	void Draw(Shader& shader, glm::mat4 modelMat, const int& wheelDirection);
+	void Draw(Shader& shader);
 
 private:
+	unsigned int indicesSize;
 	unsigned int VAO, VBO, EBO;
-	void SetUpMesh();
 };

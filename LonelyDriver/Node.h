@@ -1,8 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <memory>
-#include <iostream>
 
 #ifndef __INCLUDE_STRING__
 #define __INCLUDE_STRING__
@@ -20,22 +18,23 @@ class Shader;
 class Node
 {
 public:
-	Node(const char* _name);
-	~Node();
+	Node(const char* _name, const glm::mat4& _transformation) : mName(_name), mTransformation(_transformation) {};
+	~Node()
+	{
+		for (int i = 0; i < mChildNodes.size(); i++)
+		{
+			delete mChildNodes[i];
+		}
+	}
 
 	std::string mName;
 	std::vector<Node*> mChildNodes;
-	std::vector<Mesh> mMeshes;
-
-	glm::mat4 mTransformation;
 
 	void Draw(Shader& shader, glm::mat4 modelMat, const int& wheelDirection);
+	void AddMesh(Mesh mesh);
 	void AddChild(Node* node) { mChildNodes.push_back(node); }
-	void PrintName() {
-		std::cout << mName << std::endl;
-		for (int i = 0; i < mChildNodes.size(); i++)
-		{
-			mChildNodes[i]->PrintName();
-		}
-	}
+
+private:
+	std::vector<Mesh> mMeshes;
+	glm::mat4 mTransformation;
 };

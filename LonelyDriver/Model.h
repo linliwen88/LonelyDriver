@@ -30,25 +30,21 @@ unsigned int TextureFromFile(const char* path, const std::string& directory, boo
 class Model : public Cube
 {
 public:
-	Model(std::string _name, glm::vec3 _position, char* path) : Cube(_name, _position, 1.0f, .875f, 3.f), 
-																rootNode(nullptr), draw_offset(glm::vec3(0.0f, -0.875f, 0.0f))
+	Model(std::string _name, glm::vec3 _position, const char* path) : Cube(_name, _position, 1.0f, .875f, 3.f), 
+																rootNode(nullptr), directory(""), draw_offset(glm::vec3(0.0f, -0.875f, 0.0f))
 	{
 		LoadModel(path);
 	}
 
 	~Model() {};
 
-	// void Draw(Shader& shader, bool DrawWireframe);
 	void Draw(Shader& shader, glm::mat4 modelMat, bool DrawWireframe, const int& carDirection);
-	void PrintNodeTree();
 
 private:
 	Node* rootNode;
-	int texture_processed = 0;
-	std::vector<Mesh> meshes;
 	std::string directory;
-	std::vector<Texture> textures_loaded;
 	glm::vec3 draw_offset; // the offset to translate the origin of model to match physX bounding box. Draw wireframe to see effect 
+	std::vector<Texture> textures_loaded;
 
 	void LoadModel(const std::string& path);
 	void ProcessNode(aiNode* node, const aiScene* scene, Node* currNode);
