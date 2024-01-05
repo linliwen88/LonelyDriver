@@ -36,8 +36,8 @@ public:
 		LoadModel(path);
 	}
 
-	~Model() {};
-
+	~Model();
+	
 	void Draw(Shader& shader, glm::mat4 modelMat, bool DrawWireframe, const int& carDirection);
 
 private:

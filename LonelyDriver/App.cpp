@@ -320,8 +320,8 @@ void App::Run()
         modelShader->setVec3("lightPosition", lightCube->Position);
         modelShader->setVec3("viewPos", camera->Position);
 
-        DrawWireframe = true;
-        // render plane
+        DrawWireframe = false;
+        // render road
         road->Draw(*modelShader, DrawWireframe);
 
         // render the car

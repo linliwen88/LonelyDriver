@@ -12,6 +12,8 @@
 #include <glm/glm.hpp>
 #endif
 
+#include <iostream>
+
 class Mesh;
 class Shader;
 
@@ -34,7 +36,7 @@ public:
 	void AddChild(Node* node) { mChildNodes.push_back(node); }
 
 private:
-	std::vector<Mesh> mMeshes;
-	glm::mat4 mTransformation;
-	std::vector<Node*> mChildNodes;
+	std::vector<Mesh> mMeshes; // The meshes of this node
+	glm::mat4 mTransformation; // The transformation relative to the node's parent
+	std::vector<Node*> mChildNodes; // The child nodes of this node
 };

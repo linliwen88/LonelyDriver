@@ -11,6 +11,12 @@
 #include "stb_image.h"
 #endif
 
+Model::~Model()
+{
+	printf("deleting model nodes\n");
+	delete rootNode;
+};
+
 void Model::Draw(Shader& shader, glm::mat4 modelMat, bool DrawWireframe, const int& wheelDirection)
 {
 	if (DrawWireframe)
@@ -19,7 +25,7 @@ void Model::Draw(Shader& shader, glm::mat4 modelMat, bool DrawWireframe, const i
 		Cube::Draw(shader, DrawWireframe);
 	}
 	modelMat = glm::translate(modelMat, draw_offset);
-	modelMat = glm::scale(modelMat, glm::vec3(0.05f));
+	modelMat = glm::scale(modelMat, glm::vec3(0.01f));
 
 	rootNode->Draw(shader, modelMat, wheelDirection);
 }
@@ -50,7 +56,7 @@ void Model::ProcessNode(aiNode* node, const aiScene* scene, Node* parentNode)
 	Node* currNode = new Node(node->mName.C_Str(), AssimpMat4ToglmMat4(node->mTransformation));
 	if (parentNode == nullptr) 
 	{
-		// set the parent node
+		// set the root node
 		rootNode = currNode;
 	}
 	else
