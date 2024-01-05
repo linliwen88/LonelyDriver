@@ -29,6 +29,11 @@
 
 <img src="./pics/progress_20240103.gif" width="400" />
 
+- 1/4/2024 Skeletal animation (skinning)
+Skeletal animation (skinning) is the procss of calculating the transformations (traslation, rotation) that must be applied on the vertices due to the movement of the bone. 
+
+<img src="./pics/progress_20231230_CPUterrain.png" width="400" />
+
 
 ### Next work
 Apply Phyx vehicle class onto car model. User input control acceleration and brake.
