@@ -96,14 +96,14 @@
     <ClCompile Include="snippetvehicle2common\physxintegration\PhysXIntegration.cpp">
       <Filter>Resource Files\SnippetVehicle2Common\physxintegration</Filter>
     </ClCompile>
-    <ClCompile Include="SnippetVehicleDirectDrive.cpp">
-      <Filter>Source Files\Vehicle</Filter>
-    </ClCompile>
     <ClCompile Include="snippetvehicle2common\SnippetVehicleRender.cpp">
       <Filter>Resource Files\SnippetVehicle2Common</Filter>
     </ClCompile>
     <ClCompile Include="SnippetHelloWorldRender.cpp">
       <Filter>Source Files\HelloWorld</Filter>
+    </ClCompile>
+    <ClCompile Include="SnippetVehicleFourWheelDrive.cpp">
+      <Filter>Source Files\Vehicle</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

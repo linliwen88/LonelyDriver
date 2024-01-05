@@ -147,7 +147,7 @@
     <ClCompile Include="snippetvehicle2common\serialization\SerializationCommon.cpp" />
     <ClCompile Include="snippetvehicle2common\SnippetVehicleHelpers.cpp" />
     <ClCompile Include="snippetvehicle2common\SnippetVehicleRender.cpp" />
-    <ClCompile Include="SnippetVehicleDirectDrive.cpp" />
+    <ClCompile Include="SnippetVehicleFourWheelDrive.cpp" />
     <ClCompile Include="TestPhysX.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

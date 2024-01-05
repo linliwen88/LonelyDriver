@@ -2,7 +2,7 @@
 //
 
 #include <iostream>
-#define __SNIPPET_HELLO__  // comment this to run the vehicle drive snippet
+// #define __SNIPPET_HELLO__  // comment this to run the vehicle drive snippet
 
 #ifdef __SNIPPET_HELLO__
 extern int snippetHelloWorldMain();
