@@ -28,7 +28,6 @@ public:
 	}
 
 	std::string mName;
-	std::vector<Node*> mChildNodes;
 
 	void Draw(Shader& shader, glm::mat4 modelMat, const int& wheelDirection);
 	void AddMesh(Mesh mesh);
@@ -37,4 +36,5 @@ public:
 private:
 	std::vector<Mesh> mMeshes;
 	glm::mat4 mTransformation;
+	std::vector<Node*> mChildNodes;
 };

@@ -11,7 +11,6 @@ void Node::Draw(Shader& shader, glm::mat4 modelMat, const int& wheelDirection)
 		if (wheelDirection == -1) modelMat = glm::rotate(modelMat, glm::radians(15.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		else if (wheelDirection == 1) modelMat = glm::rotate(modelMat, glm::radians(-15.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	}
-
 	shader.setMat4("model", modelMat);
 
 	// draw meshes of this node

@@ -19,12 +19,9 @@ void Model::Draw(Shader& shader, glm::mat4 modelMat, bool DrawWireframe, const i
 		Cube::Draw(shader, DrawWireframe);
 	}
 	modelMat = glm::translate(modelMat, draw_offset);
-	modelMat = glm::scale(modelMat, glm::vec3(0.01f));
+	modelMat = glm::scale(modelMat, glm::vec3(0.05f));
 
-	for (unsigned int i = 0; i < rootNode->mChildNodes.size(); i++)
-	{
-		rootNode->mChildNodes[i]->Draw(shader, modelMat, wheelDirection);
-	}
+	rootNode->Draw(shader, modelMat, wheelDirection);
 }
 
 void Model::LoadModel(const std::string& path)
