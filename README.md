@@ -30,7 +30,7 @@
 <img src="./pics/progress_20240103.gif" width="400" />
 
 - 1/4/2024 Import and draw fbx model recursively
-This is for animating wheel direction when turing.
+This is for animating wheel direction when turing. I'm not sure why the transformation hierarchy is working as I am applied scaling at the left-most of the `model` matrix (`M = T_drawOffset * S * T_2 * T_1 * R`), I thought is is should be ` M = T_drawOffset * T_2 * T_1 * R * S`.
 
 <img src="./pics/progress_20240104.gif" width="400" />
 
