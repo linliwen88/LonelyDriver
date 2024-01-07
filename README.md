@@ -34,17 +34,22 @@ This is for animating wheel direction when turing. I'm not sure why the transfor
 
 <img src="./pics/progress_20240104.gif" width="400" />
 
+- 1/6/2024 Added physX vehicle simulation and attached with car model. \
+The car is moving in pre-choreographed sequence.
+<img src="./pics/progress_20240106.gif" width="400" />
+
+
 
 ### Next work
-Apply Phyx vehicle class onto car model. User input control acceleration and brake.
+User input control acceleration and brake.
 
 > [!WARNING]  
 > I haven't tried to apply PhysX height feild, Not sure if it suits for collision with vehicle so I didn't try it yet. Now I am just going to let the vehicle run on a plane and add textures to the plane instead of using the tesselated terrain.
 
 ### TODOs
 - [x] clean way to render wireframes (bounding box)
+- [ ] vehicle physics and user control 
 - [ ] terrain, compare CPU vs GPU generation peformance (speed, memory)
 - [ ] add normal mapping in model shder
-- [ ] vehicle physics and user control 
 - [ ] change pointers to smart pointers
 - [ ] should I move all dependencies (imgui, glfw, glm...) into solution folder?
