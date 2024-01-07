@@ -75,13 +75,7 @@
     <ClCompile Include="snippetvehicle2common\base\Base.cpp">
       <Filter>Resource Files\SnippetVehicle2Common\base</Filter>
     </ClCompile>
-    <ClCompile Include="snippetvehicle2common\directdrivetrain\DirectDrivetrain.cpp">
-      <Filter>Resource Files\SnippetVehicle2Common\directdrivetrain</Filter>
-    </ClCompile>
     <ClCompile Include="snippetvehicle2common\serialization\BaseSerialization.cpp">
-      <Filter>Resource Files\SnippetVehicle2Common\serialization</Filter>
-    </ClCompile>
-    <ClCompile Include="snippetvehicle2common\serialization\DirectDrivetrainSerialization.cpp">
       <Filter>Resource Files\SnippetVehicle2Common\serialization</Filter>
     </ClCompile>
     <ClCompile Include="snippetvehicle2common\serialization\EngineDrivetrainSerialization.cpp">

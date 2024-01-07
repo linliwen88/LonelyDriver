@@ -29,7 +29,7 @@
 
 #include <ctype.h>
 
-#include "../snippetvehicle2common/SnippetVehicleHelpers.h"
+#include "./SnippetVehicleHelpers.h"
 
 
 using namespace physx;

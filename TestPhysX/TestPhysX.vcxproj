@@ -138,11 +138,9 @@
     <ClCompile Include="snippetutils\SnippetImmUtils.cpp" />
     <ClCompile Include="snippetutils\SnippetUtils.cpp" />
     <ClCompile Include="snippetvehicle2common\base\Base.cpp" />
-    <ClCompile Include="snippetvehicle2common\directdrivetrain\DirectDrivetrain.cpp" />
     <ClCompile Include="snippetvehicle2common\enginedrivetrain\EngineDrivetrain.cpp" />
     <ClCompile Include="snippetvehicle2common\physxintegration\PhysXIntegration.cpp" />
     <ClCompile Include="snippetvehicle2common\serialization\BaseSerialization.cpp" />
-    <ClCompile Include="snippetvehicle2common\serialization\DirectDrivetrainSerialization.cpp" />
     <ClCompile Include="snippetvehicle2common\serialization\EngineDrivetrainSerialization.cpp" />
     <ClCompile Include="snippetvehicle2common\serialization\SerializationCommon.cpp" />
     <ClCompile Include="snippetvehicle2common\SnippetVehicleHelpers.cpp" />
