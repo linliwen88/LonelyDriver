@@ -52,7 +52,7 @@ App::App(const int width, const int height, const std::string& title) :
     Window::Init(&SCR_WIDTH, &SCR_HEIGHT, TITLE);
 
     // Initialize PhysX API
-    Physics::Init();
+    Physics::Init(INIT_TYPE::BASIC | INIT_TYPE::VEHICLE);
 
     // Init OpenGL and run
     InitOpenGL();
@@ -79,6 +79,7 @@ App::~App()
     delete camera;
     delete modelShader;
     delete lightShader;
+    printf("delete shaders\n");
 
     delete carModel;
     delete lightCube;
@@ -151,7 +152,7 @@ int App::InitOpenGL()
     }
 
     // create camera
-    camera = new Camera(glm::vec3(0.0f, 2.0f, 20.0f));
+    camera = new Camera(glm::vec3(20.0f, 2.0f, 20.0f));
     Window::RegisterCamera(camera);
 
     return 0;
@@ -263,7 +264,7 @@ void App::CreateDrawableObjects()
     carModel = new Model("car", glm::vec3(0.f, 5.f, 0.f), modelPath.data());
 
     // create light cube
-    lightCube = new Light("light", glm::vec3(3.f, 10.f, 0.f));
+    lightCube = new Light("light", glm::vec3(0.f, 10.f, 0.f));
 
     // create plane
     road = new Plane("plane");
@@ -326,7 +327,7 @@ void App::Run()
 
         // render the car
         // model = glm::mat4(1.0f);
-        model = objectGlobalPoses[carModel->Name];
+        model = objectGlobalPoses["EngineDrive"];
         carModel->Draw(*modelShader, model, DrawWireframe, carDirection);
 
         // render light source

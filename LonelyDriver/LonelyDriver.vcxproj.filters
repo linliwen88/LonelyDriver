@@ -16,6 +16,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{4ce35a65-9ce9-43bd-8294-77becbbb5c0d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\physXVehicle">
+      <UniqueIdentifier>{c7408e89-26b0-4793-a6ee-483d974c6f17}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LonelyDriver.cpp">
@@ -56,6 +59,30 @@
     </ClCompile>
     <ClCompile Include="Node.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\base\Base.cpp">
+      <Filter>Resource Files\physXVehicle</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\enginedrivetrain\EngineDrivetrain.cpp">
+      <Filter>Resource Files\physXVehicle</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\physxintegration\PhysXIntegration.cpp">
+      <Filter>Resource Files\physXVehicle</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\serialization\BaseSerialization.cpp">
+      <Filter>Resource Files\physXVehicle</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\serialization\EngineDrivetrainSerialization.cpp">
+      <Filter>Resource Files\physXVehicle</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\serialization\SerializationCommon.cpp">
+      <Filter>Resource Files\physXVehicle</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\SnippetVehicleHelpers.cpp">
+      <Filter>Resource Files\physXVehicle</Filter>
+    </ClCompile>
+    <ClCompile Include="snippetvehicle2common\SnippetVehicleRender.cpp">
+      <Filter>Resource Files\physXVehicle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

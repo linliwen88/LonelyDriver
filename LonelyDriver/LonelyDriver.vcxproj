@@ -154,6 +154,14 @@
     <ClCompile Include="Physics.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="snippetvehicle2common\base\Base.cpp" />
+    <ClCompile Include="snippetvehicle2common\enginedrivetrain\EngineDrivetrain.cpp" />
+    <ClCompile Include="snippetvehicle2common\physxintegration\PhysXIntegration.cpp" />
+    <ClCompile Include="snippetvehicle2common\serialization\BaseSerialization.cpp" />
+    <ClCompile Include="snippetvehicle2common\serialization\EngineDrivetrainSerialization.cpp" />
+    <ClCompile Include="snippetvehicle2common\serialization\SerializationCommon.cpp" />
+    <ClCompile Include="snippetvehicle2common\SnippetVehicleHelpers.cpp" />
+    <ClCompile Include="snippetvehicle2common\SnippetVehicleRender.cpp" />
     <ClCompile Include="stb.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
