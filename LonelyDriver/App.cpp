@@ -30,7 +30,8 @@
 #include "Camera.h"
 #include "Shader.h"
 #include "Model.h"
-#include "Cube.h"
+// #include "Cube.h"
+#include "Vehicle.h"
 #include "Skybox.h"
 #include "Light.h"
 #include "Plane.h"
@@ -52,9 +53,9 @@ App::App(const int width, const int height, const std::string& title) :
     Window::Init(&SCR_WIDTH, &SCR_HEIGHT, TITLE);
 
     // Initialize PhysX API
-    Physics::Init(INIT_TYPE::BASIC | INIT_TYPE::VEHICLE);
+    Physics::Init();
 
-    // Init OpenGL and run
+    // Init OpenGL and run                                                                                                                          
     InitOpenGL();
 
     // create skybox
@@ -62,6 +63,7 @@ App::App(const int width, const int height, const std::string& title) :
 
     // create terrain
     CreateTerrain();
+
 
     CreateDrawableObjects();
 
@@ -261,7 +263,8 @@ void App::CreateDrawableObjects()
 
     // Load car model
     std::string modelPath = "assets/good-dirty-car/car.fbx";
-    carModel = new Model("car", glm::vec3(0.f, 5.f, 0.f), modelPath.data());
+    carModel = new Vehicle("car", glm::vec3(0.f, 5.f, 0.f), modelPath.data());
+    // Physics::initVehicles(carModel->Name);
 
     // create light cube
     lightCube = new Light("light", glm::vec3(0.f, 10.f, 0.f));
@@ -321,13 +324,13 @@ void App::Run()
         modelShader->setVec3("lightPosition", lightCube->Position);
         modelShader->setVec3("viewPos", camera->Position);
 
-        DrawWireframe = false;
+        DrawWireframe = true;
         // render road
         road->Draw(*modelShader, DrawWireframe);
 
         // render the car
         // model = glm::mat4(1.0f);
-        model = objectGlobalPoses["EngineDrive"];
+        model = objectGlobalPoses[carModel->Name];
         carModel->Draw(*modelShader, model, DrawWireframe, carDirection);
 
         // render light source

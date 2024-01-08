@@ -1,4 +1,5 @@
 #include "Physics.h"
+#include "Box.h"
 #include "Light.h"
 #include "Drawable.h"
 
@@ -58,56 +59,34 @@ physx::PxReal gCommandTime = 0.0f;			//Time spent on current command
 physx::PxU32 gCommandProgress = 0;			//The id of the current command.
 
 
-int Physics::Init(const unsigned int& physicsInitType)
+int Physics::Init()
 {
-    if (physicsInitType & INIT_TYPE::BASIC)
+
+    gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
+
+    gPvd = PxCreatePvd(*gFoundation);
+    physx::PxPvdTransport* transport = physx::PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10);
+    gPvd->connect(*transport, physx::PxPvdInstrumentationFlag::eALL);
+
+    gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, physx::PxTolerancesScale(), true, gPvd);
+
+    physx::PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
+    // sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
+    sceneDesc.gravity = gGravity;
+    gDispatcher = physx::PxDefaultCpuDispatcherCreate(2);
+    sceneDesc.cpuDispatcher = gDispatcher;
+    sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
+    gScene = gPhysics->createScene(sceneDesc);
+
+    physx::PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
+    if (pvdClient)
     {
-        gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
-
-        gPvd = PxCreatePvd(*gFoundation);
-        physx::PxPvdTransport* transport = physx::PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10);
-        gPvd->connect(*transport, physx::PxPvdInstrumentationFlag::eALL);
-
-        gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, physx::PxTolerancesScale(), true, gPvd);
-
-        physx::PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
-        // sceneDesc.gravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
-        sceneDesc.gravity = gGravity;
-        gDispatcher = physx::PxDefaultCpuDispatcherCreate(2);
-        sceneDesc.cpuDispatcher = gDispatcher;
-        sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
-        gScene = gPhysics->createScene(sceneDesc);
-
-        physx::PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
-        if (pvdClient)
-        {
-            pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
-            pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
-            pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
-        }
-        gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
+        pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
+        pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+        pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
     }
-
-    if (physicsInitType & INIT_TYPE::VEHICLE)
-    {
-        physx::vehicle2::PxInitVehicleExtension(*gFoundation);
-
-       //Check that we can read from the json file before continuing.
-       snippetvehicle2::BaseVehicleParams baseParams;
-        if (!readBaseParamsFromJsonFile(gVehicleDataPath, "Base.json", baseParams))
-            return false;
-
-        //Check that we can read from the json file before continuing.
-        snippetvehicle2::EngineDrivetrainParams engineDrivetrainParams;
-        if (!readEngineDrivetrainParamsFromJsonFile(gVehicleDataPath, "EngineDrive.json",
-            engineDrivetrainParams))
-            return false;
-
-        initMaterialFrictionTable();
-        if (!initVehicles())
-            return false;
-    }
-
+    gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
+    
     Physics::CreateGround();
     return true;
 }
@@ -132,15 +111,17 @@ void Physics::initMaterialFrictionTable()
     gNbPhysXMaterialFrictions = 1;
 }
 
-int Physics::initVehicles()
+int Physics::initVehicles(std::string& gVehicleName)
 {
+    physx::vehicle2::PxInitVehicleExtension(*gFoundation);
+
+    initMaterialFrictionTable();
+
     //Load the params from json or set directly.
     readBaseParamsFromJsonFile(gVehicleDataPath, "Base.json", gVehicle.mBaseParams);
-    setPhysXIntegrationParams(gVehicle.mBaseParams.axleDescription,
-        gPhysXMaterialFrictions, gNbPhysXMaterialFrictions, gPhysXDefaultMaterialFriction,
-        gVehicle.mPhysXParams);
-    readEngineDrivetrainParamsFromJsonFile(gVehicleDataPath, "EngineDrive.json",
-        gVehicle.mEngineDriveParams);
+    setPhysXIntegrationParams(gVehicle.mBaseParams.axleDescription, gPhysXMaterialFrictions, 
+        gNbPhysXMaterialFrictions, gPhysXDefaultMaterialFriction, gVehicle.mPhysXParams);
+    readEngineDrivetrainParamsFromJsonFile(gVehicleDataPath, "EngineDrive.json", gVehicle.mEngineDriveParams);
 
     //Set the states to default.
     if (!gVehicle.initialize(*gPhysics, physx::PxCookingParams(physx::PxTolerancesScale()), *gMaterial, snippetvehicle2::EngineDriveVehicle::eDIFFTYPE_FOURWHEELDRIVE))
@@ -150,7 +131,7 @@ int Physics::initVehicles()
 
     //Apply a start pose to the physx actor and add it to the physx scene.
     physx::PxTransform pose(physx::PxVec3(0.000000000f, -0.0500000119f, -1.59399998f), physx::PxQuat(physx::PxIdentity));
-    gVehicle.setUpActor(*gScene, pose, gVehicleName);
+    gVehicle.setUpActor(*gScene, pose, gVehicleName.c_str());
 
     //Set the vehicle in 1st gear.
     gVehicle.mEngineDriveState.gearboxState.currentGear = gVehicle.mEngineDriveParams.gearBoxParams.neutralGear + 1;
@@ -188,7 +169,7 @@ void Physics::AddActor(const physx::PxGeometryType::Enum& geoType, Drawable* obj
     if (geoType == physx::PxGeometryType::eBOX)
     {
         // create a box
-        Cube* cubeObject = static_cast<Cube*>(object);
+        Box* cubeObject = static_cast<Box*>(object);
 
         physx::PxTransform t = physx::PxTransform(glmVec3ToPhysXVec3(cubeObject->Position));
         
@@ -236,12 +217,11 @@ void Physics::Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& 
             PX_ASSERT(nbShapes <= MAX_NUM_ACTOR_SHAPES);
             actors[i]->getShapes(shapes, nbShapes);
 
-            // printf("name!!!!!!!: %s\n", mPhysXState.physxActor.rigidBody->getName());
             for (physx::PxU32 j = 0; j < nbShapes; j++)
             {
                 const physx::PxMat44 shapePose(physx::PxShapeExt::getGlobalPose(*shapes[j], *actors[i]));
                 const physx::PxGeometry& geom = shapes[j]->getGeometry();
-                if (std::string(actors[i]->getName()) == "EngineDrive" && (geom.getType() != physx::PxGeometryType::eBOX))
+                if (std::string(actors[i]->getName()) == "car" && (geom.getType() != physx::PxGeometryType::eBOX))
                 {
                     break;
                 }

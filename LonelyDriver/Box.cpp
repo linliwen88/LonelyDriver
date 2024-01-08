@@ -1,26 +1,26 @@
-#include "Cube.h"
+#include "Box.h"
 #include "Shader.h"
 #include "Physics.h"
 
 // Create cube by half-height 
-Cube::Cube(std::string _name, glm::vec3 _position, float _hLength) : Drawable(_name, _position),
+Box::Box(std::string _name, glm::vec3 _position, float _hLength, bool _enablePhysics) : Drawable(_name, _position),
                                                 m_HalfLength(glm::vec3(_hLength)),
                                                 m_VAO(-1), m_VBO(-1), m_EBO(-1)
 {
-    SetUpCube(_hLength, _hLength, _hLength);
-    Physics::AddActor(physx::PxGeometryType::eBOX, this);
+    SetUpBox(_hLength, _hLength, _hLength);
+    if(_enablePhysics) Physics::AddActor(physx::PxGeometryType::eBOX, this);
 }
 
 // Create box by half-lengths of x, y, z edges 
-Cube::Cube(std::string _name, glm::vec3 _position, float _hx, float _hy, float _hz) : Drawable(_name, _position),
+Box::Box(std::string _name, glm::vec3 _position, float _hx, float _hy, float _hz, bool _enablePhysics) : Drawable(_name, _position),
                                                                  m_HalfLength(glm::vec3(_hx, _hy, _hz)),
                                                                  m_VAO(-1), m_VBO(-1), m_EBO(-1)
 {
-	SetUpCube(_hx, _hy, _hz);
-    Physics::AddActor(physx::PxGeometryType::eBOX, this);
+	SetUpBox(_hx, _hy, _hz);
+    if (_enablePhysics) Physics::AddActor(physx::PxGeometryType::eBOX, this);
 }
 
-void Cube::Draw(Shader& shader, bool drawWireframe)
+void Box::Draw(Shader& shader, bool drawWireframe)
 {
     // set polygon mode to draw wireframe
     if (drawWireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -31,7 +31,7 @@ void Cube::Draw(Shader& shader, bool drawWireframe)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void Cube::SetUpCube(float hx, float hy, float hz)
+void Box::SetUpBox(float hx, float hy, float hz)
 {
     // hx, hy, hz are half lengths of x, y, z edges
 

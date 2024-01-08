@@ -22,7 +22,7 @@ void Model::Draw(Shader& shader, glm::mat4 modelMat, bool DrawWireframe, const i
 	if (DrawWireframe)
 	{
 		shader.setMat4("model", modelMat);
-		Cube::Draw(shader, DrawWireframe);
+		Box::Draw(shader, DrawWireframe);
 	}
 	modelMat = glm::translate(modelMat, draw_offset);
 	modelMat = glm::scale(modelMat, glm::vec3(0.01f));
@@ -183,7 +183,7 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType 
 	return textures;
 }
 
-unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma)
+static unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma)
 {
 	std::string filename = std::string(path);
 	filename = directory + '/' + filename;

@@ -13,7 +13,7 @@
 class Camera;
 class Shader;
 class Model;
-class Cube;
+class Vehicle;
 class Skybox;
 class Light;
 class Plane;
@@ -54,7 +54,7 @@ private:
 	Shader* lightShader;
 
 	// models
-	Model* carModel;
+	Vehicle* carModel;
 	Shader* modelShader;
 
 	// skybox

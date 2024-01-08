@@ -26,11 +26,6 @@
 #endif
 
 #include <unordered_map>
-enum INIT_TYPE
-{
-	BASIC = (1u << 0),
-	VEHICLE = (1u << 1)
-};
 
 class Light;
 class Drawable;
@@ -38,11 +33,11 @@ class Drawable;
 class Physics
 {
 public:
-	static int  Init(const unsigned int& physicsInitType);
+	static int  Init();
 	static void AddActor(const physx::PxGeometryType::Enum& geoType, Drawable* object);
 	static void CreateGround();
 	static void initMaterialFrictionTable();
-	static int  initVehicles();
+	static int  initVehicles(std::string& gVehicleName);
 	static void Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& objectGlobalPoses, Light* light);
 	static void stepVehicles();
 	static void CleanUp();

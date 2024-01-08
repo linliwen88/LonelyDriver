@@ -20,17 +20,17 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "Cube.h";
+#include "Box.h";
 #include "Mesh.h"
 class Shader;
 class Node;
 
-unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma = false);
+static unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma = false);
 
-class Model : public Cube
+class Model : public Box
 {
 public:
-	Model(std::string _name, glm::vec3 _position, const char* path) : Cube(_name, _position, 1.0f, .875f, 3.f), 
+	Model(std::string _name, glm::vec3 _position, const char* path) : Box(_name, _position, 1.0f, .875f, 3.f, false),
 																rootNode(nullptr), directory(""), draw_offset(glm::vec3(0.0f, -0.875f, 0.0f))
 	{
 		LoadModel(path);

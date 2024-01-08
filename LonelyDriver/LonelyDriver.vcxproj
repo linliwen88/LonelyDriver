@@ -144,7 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
-    <ClCompile Include="Cube.cpp" />
+    <ClCompile Include="Box.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LonelyDriver.cpp" />
@@ -163,13 +163,14 @@
     <ClCompile Include="snippetvehicle2common\SnippetVehicleHelpers.cpp" />
     <ClCompile Include="snippetvehicle2common\SnippetVehicleRender.cpp" />
     <ClCompile Include="stb.cpp" />
+    <ClCompile Include="Vehicle.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Converter.h" />
-    <ClInclude Include="Cube.h" />
+    <ClInclude Include="Box.h" />
     <ClInclude Include="Drawable.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Mesh.h" />
@@ -180,6 +181,7 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="Vehicle.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>

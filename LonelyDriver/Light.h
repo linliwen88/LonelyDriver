@@ -10,9 +10,9 @@
 #include <string>
 #endif
 
-#include "Cube.h"
+#include "Box.h"
 
-class Light : public Cube
+class Light : public Box
 {
 public:
     Light(std::string _name, glm::vec3 _position);

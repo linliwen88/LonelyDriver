@@ -16,13 +16,13 @@
 
 #include "Drawable.h"
 
-class Cube : public Drawable
+class Box : public Drawable
 {
 public:
-	Cube(std::string _name, glm::vec3 _position, float _hLength = 0.5f);
-	Cube(std::string _name, glm::vec3 _position, float hx, float hy, float hz);
+	Box(std::string _name, glm::vec3 _position, float _hLength = 0.5f, bool _enablePhysics = true);
+	Box(std::string _name, glm::vec3 _position, float hx, float hy, float hz, bool _enablePhysics = true);
 
-	virtual ~Cube ()
+	virtual ~Box()
 	{
 		printf("deleting %s vao, vbo, and ebo\n", Name.c_str());
 		glDeleteVertexArrays(1, &m_VAO);
@@ -36,7 +36,7 @@ public:
 	
 protected:
 
-	void SetUpCube(float hx, float hy, float hz);
+	void SetUpBox(float hx, float hy, float hz);
 	unsigned int m_VAO;
 	unsigned int m_VBO;
 	unsigned int m_EBO;
