@@ -143,7 +143,7 @@ Command gCommands[] =
 {
 	{0.5f, 0.0f, 0.0f, gTargetGearCommand, 2.0f},	//brake on and come to rest for 2 seconds
 	{0.0f, 0.65f, 0.0f, gTargetGearCommand, 5.0f},	//throttle for 5 seconds
-	{0.5f, 0.0f, 0.0f, gTargetGearCommand, 5.0f},	//brake for 5 seconds
+	{0.5f, 0.0f, 0.0f, gTargetGearCommand, 2.0f},	//brake for 5 seconds
 	{0.0f, 0.75f, 0.0f, gTargetGearCommand, 5.0f},	//throttle for 5 seconds
 	{0.0f, 0.25f, 0.5f, gTargetGearCommand, 5.0f}	//light throttle and steer for 5 seconds.
 };
@@ -168,7 +168,7 @@ void initPhysX()
 	PxU32 numWorkers = 1;
 	gDispatcher = PxDefaultCpuDispatcherCreate(numWorkers);
 	sceneDesc.cpuDispatcher	= gDispatcher;
-	sceneDesc.filterShader	= VehicleFilterShader;
+	sceneDesc.filterShader	= PxDefaultSimulationFilterShader;
 
 	gScene = gPhysics->createScene(sceneDesc);
 	PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
@@ -208,7 +208,7 @@ void initGroundPlane()
 		PxShape* shape = NULL;
 		gGroundPlane->getShapes(&shape, 1, i);
 		shape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);
-		shape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
+		shape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
 		shape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, false);
 	}
 	gScene->addActor(*gGroundPlane);
@@ -284,6 +284,19 @@ bool initPhysics()
 {
 	initPhysX();
 	initGroundPlane();
+	// add box into scene
+	PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.5f, 0.5f, 0.5f), *gMaterial);
+	shape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);
+	shape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
+	shape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, false);
+
+	PxTransform t(PxVec3(0.0, 5.0, 5.0));
+	PxRigidDynamic* body = gPhysics->createRigidDynamic(t);
+	body->attachShape(*shape);
+	PxRigidBodyExt::updateMassAndInertia(*body, 10000.0f);
+	gScene->addActor(*body);
+	shape->release();
+
 	initMaterialFrictionTable();
 	if (!initVehicles())
 		return false;

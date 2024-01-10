@@ -24,7 +24,7 @@
 //
 // Copyright (c) 2008-2023 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
-// Copyright (c) 2001-2004 NovodeX AG. All rights reserved.  
+// Copyright (c) 2001-2004 NovodeX AG. All rights reserved. 
 
 #include "PhysXIntegration.h"
 
@@ -160,6 +160,15 @@ void PhysXActorVehicle::setUpActor(PxScene& scene, const PxTransform& pose, cons
 	//each vehicle update. This is not essential but it is anticipated that this will be a typical component 
 	//configuration. 
 	mPhysXState.physxActor.rigidBody->setGlobalPose(pose);
+	// printf("%d of shapes\n", mPhysXState.physxActor.rigidBody->getNbShapes());
+	for (PxU32 i = 0; i < mPhysXState.physxActor.rigidBody->getNbShapes(); i++)
+	{
+		PxShape* shape = NULL;
+		mPhysXState.physxActor.rigidBody->getShapes(&shape, 1, i);
+		shape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);
+		shape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
+		shape->setFlag(PxShapeFlag::eTRIGGER_SHAPE, false);
+	}
 
 	//Add the physx actor to the physx scene.
 	//As described above, a vehicle may be coupled to a physx scene or it can be simulated without any reference to 
