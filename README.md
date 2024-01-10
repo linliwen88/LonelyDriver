@@ -38,6 +38,9 @@ This is for animating wheel direction when turing. I'm not sure why the transfor
 The car is moving in pre-choreographed sequence.
 <img src="./pics/progress_20240106.gif" width="400" />
 
+- 1/8/2024 Studied Physx Vehicle SDK structure and applied collision onto vehicle and object in scene. \
+<img src="./pics/progress_20240108.gif" width="400" />
+
 
 
 ### Next work
