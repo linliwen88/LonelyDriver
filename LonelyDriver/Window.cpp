@@ -6,6 +6,7 @@
 #endif
 
 #include "Camera.h"
+#include "Physics.h"
 #include <iostream>
 
 GLFWwindow* Window::m_window    = nullptr;
@@ -62,8 +63,11 @@ int Window::Init(int* scrWidthPtr, int* scrHeightPtr, const std::string& title)
     return 0;
 }
 
-void Window::ProcessInput(float deltaTime, int& carDirection)
+void Window::ProcessInput(float deltaTime, Command& vehicleCommand)
 {
+    // ----------------
+    // camera control
+    // ----------------
     if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(m_window, true);
     if (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS)
@@ -75,13 +79,33 @@ void Window::ProcessInput(float deltaTime, int& carDirection)
     if (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS)
         camera->ProcessKeyboard(RIGHT, deltaTime);
 
-    // control vehicle
+    // ----------------
+    // vehicle control
+    // ----------------
+    // accelerate (throttle)
+    if (glfwGetKey(m_window, GLFW_KEY_UP) == GLFW_PRESS)
+        vehicleCommand.throttle = 1.0;
+    if (glfwGetKey(m_window, GLFW_KEY_UP) == GLFW_RELEASE)
+        vehicleCommand.throttle = 0.0;
+
+    // brake
+    if (glfwGetKey(m_window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        vehicleCommand.throttle = 0.0;
+        vehicleCommand.brake = 0.5;
+    }
+    if (glfwGetKey(m_window, GLFW_KEY_DOWN) == GLFW_RELEASE)
+    {
+        vehicleCommand.brake = 0.0;
+    }
+
+    // turn
     if (glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_PRESS)
-        carDirection = -1;
+        vehicleCommand.steer = 0.5;
     if (glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        carDirection = 1;
+        vehicleCommand.steer = -0.5;
     if (glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_RELEASE && glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_RELEASE)
-        carDirection = 0;
+        vehicleCommand.steer = 0.0;
 
 }
 

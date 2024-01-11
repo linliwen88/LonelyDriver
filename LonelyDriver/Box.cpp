@@ -2,7 +2,13 @@
 #include "Shader.h"
 #include "Physics.h"
 
-// Create cube by half-height 
+/// <summary>
+/// Create drawable cube object by a half-length of edge  
+/// </summary>
+/// <param name="_name">name of this drawable object</param>
+/// <param name="_position">position of this object in world space</param>
+/// <param name="_hLength">helf-length of the cube</param>
+/// <param name="_enablePhysics">[true] add this object into physics scene [false] will not add into physics scene</param>
 Box::Box(std::string _name, glm::vec3 _position, float _hLength, bool _enablePhysics) : Drawable(_name, _position),
                                                 m_HalfLength(glm::vec3(_hLength)),
                                                 m_VAO(-1), m_VBO(-1), m_EBO(-1)
@@ -11,7 +17,13 @@ Box::Box(std::string _name, glm::vec3 _position, float _hLength, bool _enablePhy
     if(_enablePhysics) Physics::AddActor(physx::PxGeometryType::eBOX, this);
 }
 
-// Create box by half-lengths of x, y, z edges 
+/// <summary>
+/// Create drawable box by half-lengths of x, y, z edges 
+/// </summary>
+/// <param name="_name">name of this drawable object</param>
+/// <param name="_position">position of this object in world space</param>
+/// <param name="_hLength">helf-length of the cube</param>
+/// <param name="_enablePhysics">[true] add this object into physics scene [false] will not add into physics scene</param>
 Box::Box(std::string _name, glm::vec3 _position, float _hx, float _hy, float _hz, bool _enablePhysics) : Drawable(_name, _position),
                                                                  m_HalfLength(glm::vec3(_hx, _hy, _hz)),
                                                                  m_VAO(-1), m_VBO(-1), m_EBO(-1)

@@ -30,6 +30,15 @@
 class Light;
 class Drawable;
 
+struct Command
+{
+	physx::PxF32 brake;
+	physx::PxF32 throttle;
+	physx::PxF32 steer;
+	physx::PxU32 gear;
+	physx::PxF32 duration;
+};
+
 class Physics
 {
 public:
@@ -37,10 +46,18 @@ public:
 	static void AddActor(const physx::PxGeometryType::Enum& geoType, Drawable* object);
 	static void CreateGround();
 	static void initMaterialFrictionTable();
-	static int  initVehicles(std::string& gVehicleName);
+	static int  initVehicles(std::string& gVehicleName, physx::PxVec3 position);
 	static void Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& objectGlobalPoses, Light* light);
-	static void stepVehicles();
+	static void stepVehicles(float deltaTime);
 	static void CleanUp();
+	static void ChangeVehicleCommand(const Command& _com)
+	{
+		CurrentVehicleCommand = _com;
+	}
+	static Command& getVehicleCommand()
+	{
+		return CurrentVehicleCommand;
+	}
 
 private:
 	Physics() {}
@@ -56,6 +73,7 @@ private:
 	static physx::PxMaterial*				gMaterial;
 	static physx::PxPvd*					gPvd;
 	static snippetvehicle2::EngineDriveVehicle gVehicle;
+	static Command							CurrentVehicleCommand;
 
 	//Gravitational acceleration
 	static physx::PxVec3 gGravity;
@@ -70,6 +88,7 @@ private:
 	//to store global parameters of the simulation such as 
 	//gravitational acceleration.
 	static physx::vehicle2::PxVehiclePhysXSimulationContext gVehicleSimulationContext;
+	// static physx::PxConvexMesh* gUnitCylinderSweepMesh;
 
 	//The mapping between PxMaterial and friction.
 	static physx::vehicle2::PxVehiclePhysXMaterialFriction gPhysXMaterialFrictions[16];

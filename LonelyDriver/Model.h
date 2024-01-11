@@ -27,18 +27,17 @@ class Node;
 
 static unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma = false);
 
-class Model : public Box
+class Model
 {
 public:
-	Model(std::string _name, glm::vec3 _position, const char* path) : Box(_name, _position, 1.0f, .875f, 3.f, false),
-																rootNode(nullptr), directory(""), draw_offset(glm::vec3(0.0f, -0.875f, 0.0f))
+	Model(std::string _name, glm::vec3 _position, const char* path) : rootNode(nullptr), directory(""), draw_offset(glm::vec3(0.0f, -0.875f, 0.0f))
 	{
 		LoadModel(path);
 	}
 
 	~Model();
 	
-	void Draw(Shader& shader, glm::mat4 modelMat, bool DrawWireframe, const int& carDirection);
+	void Draw(Shader& shader, glm::mat4 modelMat, const int& carDirection);
 
 private:
 	Node* rootNode;

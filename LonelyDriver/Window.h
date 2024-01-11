@@ -16,6 +16,7 @@
 #include <sstream>
 
 class Camera;
+struct Command;
 
 // Singleton window object using GLFW
 class Window
@@ -35,7 +36,7 @@ public:
 	}
 
 	static int	Init(int* scrWidthPtr, int* scrHeightPtr, const std::string& name);
-	static void ProcessInput(float deltaTime, int& carDirection);
+	static void ProcessInput(float deltaTime, Command& vehicleCommand);
 
 private:
 	Window() {}

@@ -30,11 +30,17 @@
 #include "Camera.h"
 #include "Shader.h"
 #include "Model.h"
-// #include "Cube.h"
 #include "Vehicle.h"
 #include "Skybox.h"
 #include "Light.h"
 #include "Plane.h"
+
+struct VehicleCommand
+{
+    float brake;
+    float gear;
+    float throttle;
+};
 
 void PrintVec3(glm::vec3 v)
 {
@@ -42,7 +48,8 @@ void PrintVec3(glm::vec3 v)
 }
 
 App::App(const int width, const int height, const std::string& title) :
-    SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title), deltaTime(1.0f / 60.0f), lastTime(0.0f),
+    SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title), 
+    deltaTime(1.0f / 60.0f), lastTime(0.0f), physicsTimeCounter(0.0f),
     camera(nullptr), lightCube(nullptr), lightShader(nullptr),
     carModel(nullptr), modelShader(nullptr),
     road(nullptr),
@@ -93,19 +100,17 @@ void App::UpdateDeltaTimeAndPhysics()
 {
     // Semi - fixed timestep
     float newTime = Window::GetTime();
-    float FrameTime = newTime - lastTime;
-    deltaTime = FrameTime;
+    deltaTime = newTime - lastTime;
     lastTime = newTime;
 
+    physicsTimeCounter += deltaTime;
+
     // update physics with constant tick rate
-    while (FrameTime > 0.f)
+    while (physicsTimeCounter > physicsStepTime)
     {
-        float physics_DeltaTime = fmin(FrameTime, physics_StepTime);
-
         // calculate physics, update object world poses (position and rotation) and light position
-        Physics::Step(physics_DeltaTime, objectGlobalPoses, lightCube);
-
-        FrameTime -= physics_DeltaTime;
+        Physics::Step(physicsStepTime, objectGlobalPoses, lightCube);
+        physicsTimeCounter -= physicsStepTime;
     }
 
     // display FPS
@@ -154,7 +159,7 @@ int App::InitOpenGL()
     }
 
     // create camera
-    camera = new Camera(glm::vec3(20.0f, 2.0f, 20.0f));
+    camera = new Camera(glm::vec3(0.0f, 2.0f, 20.0f));
     Window::RegisterCamera(camera);
 
     return 0;
@@ -263,8 +268,7 @@ void App::CreateDrawableObjects()
 
     // Load car model
     std::string modelPath = "assets/good-dirty-car/car.fbx";
-    carModel = new Vehicle("car", glm::vec3(0.f, 5.f, 0.f), modelPath.data());
-    // Physics::initVehicles(carModel->Name);
+    carModel = new Vehicle("car", glm::vec3(0.f, 1.f, 0.f), modelPath.data());
 
     // create light cube
     lightCube = new Light("light", glm::vec3(0.f, 10.f, 0.f));
@@ -301,7 +305,9 @@ void App::Run()
 
         // input
         static int carDirection = 0;
-        Window::ProcessInput(deltaTime, carDirection);
+        // Command vehicleCommand = {0.0f, 0.0f, 0.0f, 0.0};
+        Window::ProcessInput(deltaTime, Physics::getVehicleCommand());
+        // Physics::ChangeVehicleCommand(vehicleCommand);
 
         StartRender();
         
@@ -324,7 +330,7 @@ void App::Run()
         modelShader->setVec3("lightPosition", lightCube->Position);
         modelShader->setVec3("viewPos", camera->Position);
 
-        DrawWireframe = true;
+        DrawWireframe = false;
         // render road
         road->Draw(*modelShader, DrawWireframe);
 

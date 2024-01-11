@@ -16,19 +16,17 @@
 #include <string>
 #endif
 
+#include "Box.h"
 #include "Model.h"
 #include "Physics.h"
 
-class Shader;
 class Node;
+class Shader;
 
-class Vehicle : public Model
+class Vehicle : public Model, public Box
 {
 public:
-	Vehicle(std::string _name, glm::vec3 _position, const char* _path) : Model(_name, _position, _path)
-	{
-		Physics::initVehicles(this->Name);
-	};
+	Vehicle(std::string _name, glm::vec3 _position, const char* _path);
 
 	~Vehicle();
 	

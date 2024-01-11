@@ -17,15 +17,10 @@ Model::~Model()
 	delete rootNode;
 };
 
-void Model::Draw(Shader& shader, glm::mat4 modelMat, bool DrawWireframe, const int& wheelDirection)
+void Model::Draw(Shader& shader, glm::mat4 modelMat, const int& wheelDirection)
 {
-	if (DrawWireframe)
-	{
-		shader.setMat4("model", modelMat);
-		Box::Draw(shader, DrawWireframe);
-	}
 	modelMat = glm::translate(modelMat, draw_offset);
-	modelMat = glm::scale(modelMat, glm::vec3(0.01f));
+	modelMat = glm::scale(modelMat, glm::vec3(0.009f));
 
 	rootNode->Draw(shader, modelMat, wheelDirection);
 }

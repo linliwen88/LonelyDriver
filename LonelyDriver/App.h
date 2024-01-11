@@ -45,6 +45,7 @@ private:
 	// movement speed
 	float deltaTime; // time between current frame and last frame
 	float lastTime; // time of last frame
+	float physicsTimeCounter;
 
 	// camera
 	Camera* camera;
@@ -83,5 +84,5 @@ private:
 	// physics timing
 	// bool physics_DoStep;
 	// float physics_TimeCount;
-	const float physics_StepTime = 1.0f / 60.0f;
+	const float physicsStepTime = 1.0f / 60.0f;
 };

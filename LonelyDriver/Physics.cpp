@@ -23,6 +23,7 @@ physx::PxPvd*                                   Physics::gPvd             = NULL
 physx::PxVec3                                   Physics::gGravity = physx::PxVec3(0.0f, -9.81f, 0.0f);
 snippetvehicle2::EngineDriveVehicle             Physics::gVehicle;
 physx::vehicle2::PxVehiclePhysXSimulationContext Physics::gVehicleSimulationContext;
+// physx::PxConvexMesh*                            Physics::gUnitCylinderSweepMesh = NULL;
 
 physx::PxU32                                    Physics::gNbPhysXMaterialFrictions = 0;
 physx::PxReal                                   Physics::gPhysXDefaultMaterialFriction = 1.0f;
@@ -32,36 +33,29 @@ physx::PxRigidStatic* groundPlane = NULL;
 // --------------
 // Vehicle 
 // --------------
-
 const char gVehicleName[] = "EngineDrive";
-const char* gVehicleDataPath = "C:\\Users\\Li-Wen\\source\\repos\\LonelyDriver\\TestPhysX\\vehicledata";
+const char* gVehicleDataPath = ".\\vehicledata";
 
 //Commands are issued to the vehicle in a pre-choreographed sequence.
-struct Command
-{
-    physx::PxF32 brake;
-    physx::PxF32 throttle;
-    physx::PxF32 steer;
-    physx::PxU32 gear;
-    physx::PxF32 duration;
-};
+
 const physx::PxU32 gTargetGearCommand = physx::vehicle2::PxVehicleEngineDriveTransmissionCommandState::eAUTOMATIC_GEAR;
 Command gCommands[] =
 {
     {0.5f, 0.0f, 0.0f, gTargetGearCommand, 2.0f},	//brake on and come to rest for 2 seconds
     {0.0f, 0.65f, 0.0f, gTargetGearCommand, 5.0f},	//throttle for 5 seconds
-    {0.5f, 0.0f, 0.0f, gTargetGearCommand, 2.0f},	//brake for 5 seconds
+    {1.0f, 0.0f, 0.0f, gTargetGearCommand, 2.0f},	//brake for 5 seconds
     {0.0f, 0.75f, 0.0f, gTargetGearCommand, 5.0f},	//throttle for 5 seconds
-    {0.0f, 0.25f, 0.5f, gTargetGearCommand, 5.0f}	//light throttle and steer for 5 seconds.
+    {0.0f, 0.25f, -0.5f, gTargetGearCommand, 2.0f}	//light throttle and steer for 5 seconds.
 };
 const physx::PxU32 gNbCommands = sizeof(gCommands) / sizeof(Command);
 physx::PxReal gCommandTime = 0.0f;			//Time spent on current command
 physx::PxU32 gCommandProgress = 0;			//The id of the current command.
 
+Command Physics::CurrentVehicleCommand = { 0.0f,0.0f, 0.0f, gTargetGearCommand, 5.0 };
+
 
 int Physics::Init()
 {
-
     gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
 
     gPvd = PxCreatePvd(*gFoundation);
@@ -93,8 +87,7 @@ int Physics::Init()
 
 void Physics::CreateGround()
 {
-    // physx::PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, physx::PxPlane(0, 1, 0, 0), *gMaterial);
-    groundPlane = PxCreatePlane(*gPhysics, physx::PxPlane(0, 1, 0, 0), *gMaterial);
+    groundPlane = PxCreatePlane(*gPhysics, physx::PxPlane(0, 1.0, 0, 0), *gMaterial);
     groundPlane->setName("ground");
     gScene->addActor(*groundPlane);
 }
@@ -111,7 +104,7 @@ void Physics::initMaterialFrictionTable()
     gNbPhysXMaterialFrictions = 1;
 }
 
-int Physics::initVehicles(std::string& gVehicleName)
+int Physics::initVehicles(std::string& gVehicleName, physx::PxVec3 position)
 {
     physx::vehicle2::PxInitVehicleExtension(*gFoundation);
 
@@ -119,9 +112,10 @@ int Physics::initVehicles(std::string& gVehicleName)
 
     //Load the params from json or set directly.
     readBaseParamsFromJsonFile(gVehicleDataPath, "Base.json", gVehicle.mBaseParams);
+    readEngineDrivetrainParamsFromJsonFile(gVehicleDataPath, "EngineDrive.json", gVehicle.mEngineDriveParams);
+
     setPhysXIntegrationParams(gVehicle.mBaseParams.axleDescription, gPhysXMaterialFrictions, 
         gNbPhysXMaterialFrictions, gPhysXDefaultMaterialFriction, gVehicle.mPhysXParams);
-    readEngineDrivetrainParamsFromJsonFile(gVehicleDataPath, "EngineDrive.json", gVehicle.mEngineDriveParams);
 
     //Set the states to default.
     if (!gVehicle.initialize(*gPhysics, physx::PxCookingParams(physx::PxTolerancesScale()), *gMaterial, snippetvehicle2::EngineDriveVehicle::eDIFFTYPE_FOURWHEELDRIVE))
@@ -130,7 +124,8 @@ int Physics::initVehicles(std::string& gVehicleName)
     }
 
     //Apply a start pose to the physx actor and add it to the physx scene.
-    physx::PxTransform pose(physx::PxVec3(0.000000000f, -0.0500000119f, -1.59399998f), physx::PxQuat(physx::PxIdentity));
+    // physx::PxTransform pose(physx::PxVec3(0.000000000f, -0.500000119f, -1.59399998f), physx::PxQuat(physx::PxIdentity));
+    physx::PxTransform pose(position, physx::PxQuat(physx::PxIdentity));
     gVehicle.setUpActor(*gScene, pose, gVehicleName.c_str());
 
     //Set the vehicle in 1st gear.
@@ -154,27 +149,35 @@ int Physics::initVehicles(std::string& gVehicleName)
     gVehicleSimulationContext.gravity = gGravity;
     gVehicleSimulationContext.physxScene = gScene;
     gVehicleSimulationContext.physxActorUpdateMode = physx::vehicle2::PxVehiclePhysXActorUpdateMode::eAPPLY_ACCELERATION;
+
+    /*gUnitCylinderSweepMesh = PxVehicleUnitCylinderSweepMeshCreate(gVehicleSimulationContext.frame,
+        *gPhysics, physx::PxCookingParams(physx::PxTolerancesScale()));
+    if (!gUnitCylinderSweepMesh)
+    {
+        return false;
+    }
+    gVehicleSimulationContext.physxUnitCylinderSweepMesh = gUnitCylinderSweepMesh;*/
+
     return true;
 }
-
+/// <summary>
+/// create actor of 'geotType' for 'object' and put into physX scene
+/// </summary>
+/// <param name="geoType">specify desired geometric type</param>
+/// <param name="object">the the object to put into scene </param>
 void Physics::AddActor(const physx::PxGeometryType::Enum& geoType, Drawable* object)
 {
-    // material
-    // RigidActor type: PxRigidStatic | PxRigidDynamic 
-    // Pxshape
-    // Transform
-
     gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 
     if (geoType == physx::PxGeometryType::eBOX)
     {
         // create a box
         Box* cubeObject = static_cast<Box*>(object);
-
-        physx::PxTransform t = physx::PxTransform(glmVec3ToPhysXVec3(cubeObject->Position));
         
         // physx::PxShape* shape = gPhysics->createShape(physx::PxBoxGeometry(cubeObject->hx / 2.f, cubeObject->hy / 2.f, cubeObject->hz / 2.f), *gMaterial);
         physx::PxShape* shape = gPhysics->createShape(physx::PxBoxGeometry(cubeObject->m_HalfLength.x, cubeObject->m_HalfLength.y, cubeObject->m_HalfLength.z), *gMaterial);
+
+        physx::PxTransform t = physx::PxTransform(glmVec3ToPhysXVec3(cubeObject->Position));
         physx::PxRigidDynamic* body = gPhysics->createRigidDynamic(t);
         body->attachShape(*shape);
         body->setName(cubeObject->Name.c_str());
@@ -186,7 +189,7 @@ void Physics::AddActor(const physx::PxGeometryType::Enum& geoType, Drawable* obj
 
 void Physics::Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& objectGlobalPoses, Light* light)
 {
-    stepVehicles();
+    stepVehicles(deltaTime);
 
     gScene->simulate(deltaTime);
     gScene->fetchResults(true);
@@ -201,7 +204,6 @@ void Physics::Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& 
     }
 
     physx::PxU32 nbActors = gScene->getNbActors(physx::PxActorTypeFlag::eRIGID_DYNAMIC | physx::PxActorTypeFlag::eRIGID_STATIC);
-
     glm::mat4 newModelMat;
     if (nbActors)
     {
@@ -239,20 +241,25 @@ void Physics::Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& 
     }
 }
 
-void Physics::stepVehicles()
+void Physics::stepVehicles(float deltaTime)
 {
-    if (gNbCommands == gCommandProgress)
-        return;
+    //if (gNbCommands == gCommandProgress)
+    //    return;
 
-    const physx::PxReal timestep = 1.0f / 60.0f;
+    ////Apply the brake, throttle and steer to the command state of the vehicle.
+    //const Command& command = gCommands[gCommandProgress];
+    //gVehicle.mCommandState.brakes[0] = command.brake;
+    //gVehicle.mCommandState.nbBrakes = 1;
+    //gVehicle.mCommandState.throttle = command.throttle;
+    //gVehicle.mCommandState.steer = command.steer;
+    //gVehicle.mTransmissionCommandState.targetGear = command.gear;
 
     //Apply the brake, throttle and steer to the command state of the vehicle.
-    const Command& command = gCommands[gCommandProgress];
-    gVehicle.mCommandState.brakes[0] = command.brake;
+    gVehicle.mCommandState.brakes[0] = CurrentVehicleCommand.brake;
     gVehicle.mCommandState.nbBrakes = 1;
-    gVehicle.mCommandState.throttle = command.throttle;
-    gVehicle.mCommandState.steer = command.steer;
-    gVehicle.mTransmissionCommandState.targetGear = command.gear;
+    gVehicle.mCommandState.throttle = CurrentVehicleCommand.throttle;
+    gVehicle.mCommandState.steer = CurrentVehicleCommand.steer;
+    gVehicle.mTransmissionCommandState.targetGear = CurrentVehicleCommand.gear;
 
     //Forward integrate the vehicle by a single timestep.
     //Apply substepping at low forward speed to improve simulation fidelity.
@@ -261,7 +268,7 @@ void Physics::stepVehicles()
     const physx::PxReal forwardSpeed = linVel.dot(forwardDir);
     const physx::PxU8 nbSubsteps = (forwardSpeed < 5.0f ? 3 : 1);
     gVehicle.mComponentSequence.setSubsteps(gVehicle.mComponentSequenceSubstepGroupHandle, nbSubsteps);
-    gVehicle.step(timestep, gVehicleSimulationContext);
+    gVehicle.step(deltaTime, gVehicleSimulationContext);
 }
 
 void Physics::CleanUp()
