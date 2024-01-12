@@ -17,7 +17,7 @@ Model::~Model()
 	delete rootNode;
 };
 
-void Model::Draw(Shader& shader, glm::mat4 modelMat, const int& wheelDirection)
+void Model::Draw(Shader& shader, glm::mat4 modelMat, const float wheelDirection)
 {
 	modelMat = glm::translate(modelMat, draw_offset);
 	modelMat = glm::scale(modelMat, glm::vec3(0.009f));

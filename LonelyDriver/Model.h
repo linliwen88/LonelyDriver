@@ -37,7 +37,7 @@ public:
 
 	~Model();
 	
-	void Draw(Shader& shader, glm::mat4 modelMat, const int& carDirection);
+	void Draw(Shader& shader, glm::mat4 modelMat, const float carDirection);
 
 private:
 	Node* rootNode;

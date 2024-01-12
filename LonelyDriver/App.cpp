@@ -35,13 +35,6 @@
 #include "Light.h"
 #include "Plane.h"
 
-struct VehicleCommand
-{
-    float brake;
-    float gear;
-    float throttle;
-};
-
 void PrintVec3(glm::vec3 v)
 {
     std::cout << v.x << ' ' << v.y << ' ' << v.z << std::endl;
@@ -56,7 +49,7 @@ App::App(const int width, const int height, const std::string& title) :
     view(glm::mat4(0.f)), projection(glm::mat4(0.f)),
     DrawWireframe(false)
 {
-	// Initialize GLFW window
+    // Initialize GLFW window
     Window::Init(&SCR_WIDTH, &SCR_HEIGHT, TITLE);
 
     // Initialize PhysX API
@@ -305,9 +298,7 @@ void App::Run()
 
         // input
         static int carDirection = 0;
-        // Command vehicleCommand = {0.0f, 0.0f, 0.0f, 0.0};
         Window::ProcessInput(deltaTime, Physics::getVehicleCommand());
-        // Physics::ChangeVehicleCommand(vehicleCommand);
 
         StartRender();
         
@@ -337,7 +328,7 @@ void App::Run()
         // render the car
         // model = glm::mat4(1.0f);
         model = objectGlobalPoses[carModel->Name];
-        carModel->Draw(*modelShader, model, DrawWireframe, carDirection);
+        carModel->Draw(*modelShader, model, DrawWireframe, Physics::getVehicleCommand().steer);
 
         // render light source
         lightShader->use();

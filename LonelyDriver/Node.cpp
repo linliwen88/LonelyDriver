@@ -1,15 +1,15 @@
 #include "Node.h"
 #include "Mesh.h"
 
-void Node::Draw(Shader& shader, glm::mat4 modelMat, const int& wheelDirection)
+void Node::Draw(Shader& shader, glm::mat4 modelMat, const float wheelDirection)
 {
 	modelMat = modelMat * mTransformation;
 	
 	// rotate wheel
 	if (mName.find("front_wheel") != std::string::npos)
 	{
-		if (wheelDirection == -1) modelMat = glm::rotate(modelMat, glm::radians(15.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		else if (wheelDirection == 1) modelMat = glm::rotate(modelMat, glm::radians(-15.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		if (wheelDirection > 0.f) modelMat = glm::rotate(modelMat, glm::radians(30.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		else if (wheelDirection < 0.f) modelMat = glm::rotate(modelMat, glm::radians(-30.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	}
 	shader.setMat4("model", modelMat);
 

@@ -21,7 +21,7 @@ Vehicle::~Vehicle()
 	printf("deleting vehicle\n");
 };
 
-void Vehicle::Draw(Shader& shader, glm::mat4 modelMat, bool DrawWireframe, const int& wheelDirection)
+void Vehicle::Draw(Shader& shader, glm::mat4 modelMat, bool DrawWireframe, const float wheelDirection)
 {
 	if (DrawWireframe)
 	{

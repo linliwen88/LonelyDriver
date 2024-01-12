@@ -30,5 +30,5 @@ public:
 
 	~Vehicle();
 	
-	void Draw(Shader& shader, glm::mat4 modelMat, bool DrawWireframe, const int& carDirection);
+	void Draw(Shader& shader, glm::mat4 modelMat, bool DrawWireframe, const float carDirection);
 };

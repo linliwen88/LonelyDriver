@@ -31,7 +31,7 @@ public:
 
 	std::string mName;
 
-	void Draw(Shader& shader, glm::mat4 modelMat, const int& wheelDirection);
+	void Draw(Shader& shader, glm::mat4 modelMat, const float wheelDirection);
 	void AddMesh(Mesh mesh);
 	void AddChild(Node* node) { mChildNodes.push_back(node); }
 
