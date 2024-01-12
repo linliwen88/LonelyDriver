@@ -44,6 +44,7 @@ public:
     float MovementSpeed;
     float MouseSensitivity;
     float Zoom;
+    bool Follow;
 
     // constructor with vectors
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(-1.0f, -0.1f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
@@ -52,6 +53,7 @@ public:
         WorldUp = up;
         Yaw = yaw;
         Pitch = pitch;
+        Follow = false;
         updateCameraVectors();
     }
     // constructor with scalar values
@@ -61,6 +63,21 @@ public:
         WorldUp = glm::vec3(upX, upY, upZ);
         Yaw = yaw;
         Pitch = pitch;
+        Follow = false;
+        updateCameraVectors();
+    }
+
+    bool& GetFollowSwitch()
+    {
+        return Follow;
+    }
+
+    void SetFollow(const glm::vec3& lookTarget, const glm::vec4 frontDirection)
+    {
+        Position = lookTarget;
+        Yaw = glm::degrees(frontDirection.w);
+        printf("Yaw: %f\n", Yaw);
+        Pitch = -20.0f;
         updateCameraVectors();
     }
 
@@ -117,6 +134,7 @@ public:
     }
 
 private:
+
     // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors()
     {
@@ -129,6 +147,8 @@ private:
         // also re-calculate the Right and Up vector
         Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
         Up = glm::normalize(glm::cross(Right, Front));
+
+        if (Follow) Position -= (5.f * Front);
     }
 };
 #endif

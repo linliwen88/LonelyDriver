@@ -29,6 +29,19 @@ public:
 	Vehicle(std::string _name, glm::vec3 _position, const char* _path);
 
 	~Vehicle();
-	
+
+	glm::vec3& GetPosition()
+	{
+		return position;
+	}
+
+	glm::vec4& GetRotation()
+	{
+		return rotation;
+	}
 	void Draw(Shader& shader, glm::mat4 modelMat, bool DrawWireframe, const int& carDirection);
+
+private:
+	glm::vec3 position;
+	glm::vec4 rotation; // (x, y, z, deg), rotation represented with an axis of 3 scalars and an angle expressed in degrees.
 };
