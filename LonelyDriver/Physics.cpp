@@ -187,7 +187,8 @@ void Physics::AddActor(const physx::PxGeometryType::Enum& geoType, Drawable* obj
     }
 }
 
-void Physics::Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& objectGlobalPoses, Light* light)
+void Physics::Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& objectGlobalPoses, 
+                   Light* light, glm::vec3& vehiclePosition, glm::vec4& vehicleRotation)
 {
     stepVehicles(deltaTime);
 
@@ -231,6 +232,18 @@ void Physics::Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& 
                 // printf("actor name: %s shape: %d\n", actors[i]->getName(), geom.getType());
                 newModelMat = PhysXMat4ToglmMat4(shapePose);
                 objectGlobalPoses[actors[i]->getName()] = newModelMat;
+
+                // get vehicle position and rotation
+                if (std::string(actors[i]->getName()) == "car")
+                {
+                    vehiclePosition = PhysXVec3ToglmVec3(physx::PxShapeExt::getGlobalPose(*shapes[j], *actors[i]).p);
+
+                    float angle;
+                    physx::PxVec3 axis;
+                    physx::PxShapeExt::getGlobalPose(*shapes[j], *actors[i]).q.toRadiansAndUnitAxis(angle, axis);
+
+                    vehicleRotation = PhysXVec4ToglmVec4(physx::PxVec4(axis, angle));
+                }
 
                 if (actors[i]->getName() == light->Name)
                 {

@@ -11,6 +11,14 @@
 #include <string>
 #endif
 
+#ifndef __INCUDE_IMGUI__
+#define __INCUDE_IMGUI__
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+#endif // !__INCUDE_IMGUI__
+
+
 #include <iostream> 
 #include <iomanip>
 #include <sstream>
@@ -23,11 +31,23 @@ class Window
 {
 public:
 	static double	GetTime()		{ return glfwGetTime(); }
-	static void		Terminate()		{ glfwTerminate(); std::cout << "glfw Terminated\n"; }
+	static void		Terminate();
 	static void		PollEvents()	{ glfwPollEvents(); }
 	static bool		ShouldClose()	{ return glfwWindowShouldClose(m_window); }
 	static void		SwapBuffers()	{		 glfwSwapBuffers(m_window); }
-	static void		RegisterCamera(Camera* _camera) { camera = _camera; }
+	static void		RegisterCamera(Camera* _camera)
+	{
+		camera = _camera;
+
+	}
+	static void		StartGUIFrame();
+
+	static void		RenderGUI()
+	{
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	}
+
 	static void		SetWindowTitle(float fps) 
 	{
 		std::stringstream ss;
@@ -43,6 +63,8 @@ private:
 	Window(const Window&)      = delete; // delete copy constructor
 	Window& operator=(Window&) = delete; // delete assignment operator
 
+	static int initGLFW();
+	static void initIMGUI();
 	static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 	static void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 	static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);

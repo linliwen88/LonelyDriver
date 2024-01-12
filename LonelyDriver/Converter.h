@@ -96,6 +96,22 @@ static glm::vec3 PhysXVec3ToglmVec3(const physx::PxVec3& vec3)
     return newVec;
 }
 
+/** Convert PhysX::PxVec4 to glm::vec4
+ @param[in] The PhysX::PxVec4
+ @return Converted glm::vec4
+ */
+static glm::vec4 PhysXVec4ToglmVec4(const physx::PxVec4& vec4)
+{
+    glm::vec4 newVec;
+
+    newVec.x = vec4.x;
+    newVec.y = vec4.y;
+    newVec.z = vec4.z;
+    newVec.w = vec4.w;
+
+    return newVec;
+}
+
 /** Convert glm::vec3 to PhysX::PxVec3
  @param[in] The glm::vec3
  @return    Converted PhysX::PxVec3

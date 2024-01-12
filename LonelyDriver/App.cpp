@@ -40,6 +40,11 @@ void PrintVec3(glm::vec3 v)
     std::cout << v.x << ' ' << v.y << ' ' << v.z << std::endl;
 }
 
+void PrintVec4(glm::vec4 v)
+{
+    std::cout << v.x << ' ' << v.y << ' ' << v.z << v.w << std::endl;
+}
+
 App::App(const int width, const int height, const std::string& title) :
     SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title), 
     deltaTime(1.0f / 60.0f), lastTime(0.0f), physicsTimeCounter(0.0f),
@@ -49,7 +54,7 @@ App::App(const int width, const int height, const std::string& title) :
     view(glm::mat4(0.f)), projection(glm::mat4(0.f)),
     DrawWireframe(false)
 {
-    // Initialize GLFW window
+	// Initialize GLFW window
     Window::Init(&SCR_WIDTH, &SCR_HEIGHT, TITLE);
 
     // Initialize PhysX API
@@ -102,7 +107,7 @@ void App::UpdateDeltaTimeAndPhysics()
     while (physicsTimeCounter > physicsStepTime)
     {
         // calculate physics, update object world poses (position and rotation) and light position
-        Physics::Step(physicsStepTime, objectGlobalPoses, lightCube);
+        Physics::Step(physicsStepTime, objectGlobalPoses, lightCube, carModel->GetPosition(), carModel->GetRotation());
         physicsTimeCounter -= physicsStepTime;
     }
 
@@ -299,6 +304,7 @@ void App::Run()
         // input
         static int carDirection = 0;
         Window::ProcessInput(deltaTime, Physics::getVehicleCommand());
+        // Physics::ChangeVehicleCommand(vehicleCommand);
 
         StartRender();
         
@@ -348,6 +354,7 @@ void App::Run()
         skyboxShader->setMat4("projection", projection);
         skybox->Draw(*skyboxShader, DrawWireframe);
 
+        Window::RenderGUI();
         FinishRender();
     }
 }
