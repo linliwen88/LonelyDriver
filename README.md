@@ -29,6 +29,9 @@
 
 <img src="./pics/progress_20240103.gif" width="400" />
 
+> [!WARNING]  
+> I haven't tried to apply PhysX height feild, Not sure if it suits for collision with vehicle so I didn't try it yet. Now I am just going to let the vehicle run on a plane and add textures to the plane instead of using the tesselated terrain.
+
 - 1/4/2024 Import and draw fbx model recursively \
 This is for animating wheel direction when turing. I'm not sure why the transformation hierarchy works as I am applying scaling at the left-most of the `model` matrix (`M = T_drawOffset * S * T_2 * T_1 * R`), I thought it should be ` M = T_drawOffset * T_2 * T_1 * R * S`.
 
@@ -46,15 +49,13 @@ Add Imgui and following camera (to be imporved).
 <img src="./pics/progress_20240111.gif" width="400" />
 
 
-
-
-> [!WARNING]  
-> I haven't tried to apply PhysX height feild, Not sure if it suits for collision with vehicle so I didn't try it yet. Now I am just going to let the vehicle run on a plane and add textures to the plane instead of using the tesselated terrain.
-
 ### TODOs
 - [x] clean way to render wireframes (bounding box)
-- [x] vehicle physics and user control 
-- [ ] terrain, compare CPU vs GPU generation peformance (speed, memory)
-- [ ] add normal mapping in model shder
+- [x] vehicle physics and user control
+- [ ] render terrain with textures.
+- [ ] implement better following camera
+- [ ] interpolate wheel rotation  
+- [ ] add normal and environment mapping in model shder
 - [ ] change pointers to smart pointers
-- [ ] should I move all dependencies (imgui, glfw, glm...) into solution folder?
+- [ ] terrain, compare CPU vs GPU generation peformance (speed, memory)
+- [ ] should I move all dependencies (glfw, glm...) into solution folder?
