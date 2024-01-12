@@ -41,17 +41,19 @@ The car is moving in pre-choreographed sequence.
 - 1/8/2024 Studied Physx Vehicle SDK structure and applied collision onto vehicle and object in scene. \
 <img src="./pics/progress_20240108.gif" width="400" />
 
+- 1/11/2024 Add user input control car throttle, brake, and steer. \
+Add Imgui and following camera (to be imporved).
+<img src="./pics/progress_20240111.gif" width="400" />
 
 
-### Next work
-User input control acceleration and brake.
+
 
 > [!WARNING]  
 > I haven't tried to apply PhysX height feild, Not sure if it suits for collision with vehicle so I didn't try it yet. Now I am just going to let the vehicle run on a plane and add textures to the plane instead of using the tesselated terrain.
 
 ### TODOs
 - [x] clean way to render wireframes (bounding box)
-- [ ] vehicle physics and user control 
+- [x] vehicle physics and user control 
 - [ ] terrain, compare CPU vs GPU generation peformance (speed, memory)
 - [ ] add normal mapping in model shder
 - [ ] change pointers to smart pointers
