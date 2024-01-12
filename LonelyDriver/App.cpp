@@ -306,6 +306,15 @@ void App::Run()
         Window::ProcessInput(deltaTime, Physics::getVehicleCommand());
         // Physics::ChangeVehicleCommand(vehicleCommand);
 
+        // start Imgui frame
+        Window::StartGUIFrame();
+
+        // let the camera follow car
+        if (camera->Follow)
+        {
+            camera->SetFollow(carModel->GetPosition(), carModel->GetRotation());
+        }
+
         StartRender();
         
         // don't forget to enable shader before setting uniforms
