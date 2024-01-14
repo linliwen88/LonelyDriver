@@ -9,6 +9,7 @@ uniform mat4 projection;
 in vec2 TextureCoord[];
 
 out float Height;
+out vec2 TexCoord;
 
 void main()
 {
@@ -22,9 +23,9 @@ void main()
 
     vec2 t0 = (t01 - t00) * u + t00;
     vec2 t1 = (t11 - t10) * u + t10;
-    vec2 texCoord = (t1 - t0) * v + t0;
-    float gamma = 2.2f;
-    Height = pow(texture(heightMap, texCoord).y, float(1.0 / gamma)) * 64.f - 16.f;
+    TexCoord = (t1 - t0) * v + t0;
+    float gamma = 1.0f;
+    Height = pow(texture(heightMap, TexCoord).x, float(1.0 / gamma)) * 64.f - 8.f;
 
     vec4 p00 = gl_in[0].gl_Position;
     vec4 p01 = gl_in[1].gl_Position;

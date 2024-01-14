@@ -76,7 +76,6 @@ public:
     {
         Position = lookTarget;
         Yaw = glm::degrees(frontDirection.w);
-        printf("Yaw: %f\n", Yaw);
         Pitch = -20.0f;
         updateCameraVectors();
     }

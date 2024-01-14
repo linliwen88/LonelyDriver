@@ -171,12 +171,14 @@ void App::CreateSkybox()
 
 void App::CreateTerrain()
 {
-    tessHeightMapShader = new Shader("shaders/terrian_vshader.glsl", "shaders/terrian_fshader.glsl", nullptr, "shaders/terrian_tcshader.glsl", "shaders/terrian_teshader.glsl");
-
+    tessShader = new Shader("shaders/terrian_vshader.glsl", "shaders/terrian_fshader.glsl", nullptr, "shaders/terrian_tcshader.glsl", "shaders/terrian_teshader.glsl");
+    tessShader->use();
+    // ----------------------
     // load height map texture
-    glGenTextures(1, &terrainTexture);
+    // ----------------------
+    glGenTextures(1, &terrainHeightTexture);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, terrainTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+    glBindTexture(GL_TEXTURE_2D, terrainHeightTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
     // set the texture wrapping parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -184,15 +186,44 @@ void App::CreateTerrain()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // load image, create texture and generate mipmaps
+    // load heightmap image, create texture and generate mipmaps
     int width, height, nChannels;
-    unsigned char* data = stbi_load("assets/heightmap.png", &width, &height, &nChannels, 0);
+    unsigned char* data = stbi_load("assets/terrain/Rolling Hills Height Map_32.png", &width, &height, &nChannels, 0);
+    if (data)
+    {
+        // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+        tessShader->setInt("heightMap", 0);
+        std::cout << "Loaded terrain heightmap of size " << height << " x " << width << std::endl;
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+
+    // ----------------------
+    // load color map texture
+    // ----------------------
+    glGenTextures(1, &terrainColorTexture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, terrainColorTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters, didn't use mipmap for heightmap because Mip levels won't be selected automatically with derivatives like in the fragment shader. (learn OpenGL)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load color map image, create texture and generate mipmaps
+    data = stbi_load("assets/terrain/Rolling Hills Bitmap 1025_32.png", &width, &height, &nChannels, 0);
     if (data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
 
-        tessHeightMapShader->setInt("heightMap", 0);
-        std::cout << "Loaded heightmap of size " << height << " x " << width << std::endl;
+        tessShader->setInt("colorMap", 1);
+        std::cout << "Loaded terrain colormap of size " << height << " x " << width << std::endl;
     }
     else
     {
@@ -277,18 +308,26 @@ void App::CreateDrawableObjects()
 
 void App::DrawTerrain()
 {
-    tessHeightMapShader->use();
+    tessShader->use();
     glm::mat4 model = glm::mat4(1.0f);
-    tessHeightMapShader->setMat4("model", model);
-    tessHeightMapShader->setMat4("view", view);
-    tessHeightMapShader->setMat4("projection", projection);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    tessShader->setMat4("model", model);
+    tessShader->setMat4("view", view);
+    tessShader->setMat4("projection", projection);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glBindVertexArray(terrainVAO);
+
+    tessShader->setInt("heightMap", 0);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, terrainTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+    glBindTexture(GL_TEXTURE_2D, terrainHeightTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+
+    tessShader->setInt("colorMap", 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, terrainColorTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+
     glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
     glBindVertexArray(0);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glActiveTexture(GL_TEXTURE0);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void App::Run()
@@ -354,7 +393,7 @@ void App::Run()
         // PrintVec3(lightCube->Position);
 
         // render terrain
-        // DrawTerrain();
+        DrawTerrain();
 
         // render skybox last for special view matrix
         skyboxShader->use();

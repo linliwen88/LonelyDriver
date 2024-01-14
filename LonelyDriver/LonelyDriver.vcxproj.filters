@@ -30,9 +30,6 @@
     <ClCompile Include="LonelyDriver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="glad.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="stb.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -113,6 +110,9 @@
     </ClCompile>
     <ClCompile Include="imgui\backends\imgui_impl_opengl3.cpp">
       <Filter>Resource Files\imgui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="glad.c">
+      <Filter>Resource Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

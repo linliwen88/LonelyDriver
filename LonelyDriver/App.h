@@ -75,8 +75,9 @@ private:
 	const unsigned rez = 20;
 	unsigned int terrainVAO;
 	unsigned int terrainVBO;
-	unsigned int terrainTexture;
-	Shader* tessHeightMapShader;
+	unsigned int terrainHeightTexture;
+	unsigned int terrainColorTexture;
+	Shader* tessShader;
 
 	float oneSec = 0.f;
 	int frameCount = 0;
