@@ -1,6 +1,5 @@
 #include "Physics.h"
 #include "Box.h"
-#include "Light.h"
 #include "Drawable.h"
 
 #ifndef __INCLUDE_CONVERTER__
@@ -188,7 +187,7 @@ void Physics::AddActor(const physx::PxGeometryType::Enum& geoType, Drawable* obj
 }
 
 void Physics::Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& objectGlobalPoses, 
-                   Light* light, glm::vec3& vehiclePosition, glm::vec4& vehicleRotation)
+                   glm::vec3& vehiclePosition, glm::vec4& vehicleRotation)
 {
     stepVehicles(deltaTime);
 
@@ -243,11 +242,6 @@ void Physics::Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& 
                     physx::PxShapeExt::getGlobalPose(*shapes[j], *actors[i]).q.toRadiansAndUnitAxis(angle, axis);
 
                     vehicleRotation = PhysXVec4ToglmVec4(physx::PxVec4(axis, angle));
-                }
-
-                if (actors[i]->getName() == light->Name)
-                {
-                    light->Position = PhysXVec3ToglmVec3(physx::PxShapeExt::getGlobalPose(*shapes[j], *actors[i]).p);
                 }
             }
         }

@@ -47,7 +47,7 @@ public:
 	static void CreateGround();
 	static void initMaterialFrictionTable();
 	static int  initVehicles(std::string& gVehicleName, physx::PxVec3 position);
-	static void Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& objectGlobalPoses, Light* light, glm::vec3& vehiclePosition, glm::vec4& vehicleRotation);
+	static void Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& objectGlobalPoses, glm::vec3& vehiclePosition, glm::vec4& vehicleRotation);
 	static void stepVehicles(float deltaTime);
 	static void CleanUp();
 	static void ChangeVehicleCommand(const Command& _com)
