@@ -142,6 +142,9 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
 		std::vector<Texture> emissiveMaps = LoadMaterialTextures(material, aiTextureType_EMISSIVE, "texture_emissive");
 		textures.insert(textures.end(), emissiveMaps.begin(), emissiveMaps.end());
+
+		std::vector<Texture> opacityMaps = LoadMaterialTextures(material, aiTextureType_OPACITY, "texture_opacity");
+		textures.insert(textures.end(), opacityMaps.begin(), opacityMaps.end());
 	}
 
 	return Mesh(mesh->mName.C_Str(), vertices, indices, textures);
@@ -206,6 +209,7 @@ static unsigned int TextureFromFile(const char* path, const std::string& directo
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		std::cout << "Texture loaded at path: " << path << std::endl;
 
 		stbi_image_free(data);
 

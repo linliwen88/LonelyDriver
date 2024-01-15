@@ -49,7 +49,7 @@ App::App(const int width, const int height, const std::string& title) :
     SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title), 
     deltaTime(1.0f / 60.0f), lastTime(0.0f), physicsTimeCounter(0.0f),
     camera(nullptr), lightCube(nullptr), lightShader(nullptr),
-    carModel(nullptr), modelShader(nullptr),
+    tree(nullptr), carModel(nullptr), modelShader(nullptr),
     road(nullptr),
     view(glm::mat4(0.f)), projection(glm::mat4(0.f)),
     DrawWireframe(false)
@@ -107,7 +107,7 @@ void App::UpdateDeltaTimeAndPhysics()
     while (physicsTimeCounter > physicsStepTime)
     {
         // calculate physics, update object world poses (position and rotation) and light position
-        Physics::Step(physicsStepTime, objectGlobalPoses, lightCube, carModel->GetPosition(), carModel->GetRotation());
+        Physics::Step(physicsStepTime, objectGlobalPoses, carModel->GetPosition(), carModel->GetRotation());
         physicsTimeCounter -= physicsStepTime;
     }
 
@@ -300,10 +300,14 @@ void App::CreateDrawableObjects()
     carModel = new Vehicle("car", glm::vec3(0.f, 1.f, 0.f), modelPath.data());
 
     // create light cube
-    lightCube = new Light("light", glm::vec3(0.f, 10.f, 0.f));
+    lightCube = new Light(glm::vec3(0.f, 10.f, 0.f));
 
     // create plane
     road = new Plane("plane");
+
+    // load tree model
+    modelPath = "assets/tree/Gledista_Triacanthos.fbx";
+    tree = new Model("tree", glm::vec3(3.f, 1.0, 3.f), modelPath.data());
 }
 
 void App::DrawTerrain()
@@ -380,16 +384,17 @@ void App::Run()
         road->Draw(*modelShader, DrawWireframe);
 
         // render the car
-        // model = glm::mat4(1.0f);
         model = objectGlobalPoses[carModel->Name];
         carModel->Draw(*modelShader, model, DrawWireframe, Physics::getVehicleCommand().steer);
+        model = glm::mat4(1.0f);
+        tree->Draw(*modelShader, model, Physics::getVehicleCommand().steer);
 
         // render light source
-        lightShader->use();
-        lightShader->setMat4("model", objectGlobalPoses[lightCube->Name]);
-        lightShader->setMat4("view", view);
-        lightShader->setMat4("projection", projection);
-        lightCube->Draw(*lightShader, DrawWireframe);
+        //lightShader->use();
+        //lightShader->setMat4("model", objectGlobalPoses[lightCube->Name]);
+        //lightShader->setMat4("view", view);
+        //lightShader->setMat4("projection", projection);
+        //lightCube->Draw(*lightShader, DrawWireframe);
         // PrintVec3(lightCube->Position);
 
         // render terrain

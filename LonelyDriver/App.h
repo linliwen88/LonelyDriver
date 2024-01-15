@@ -55,8 +55,10 @@ private:
 	Shader* lightShader;
 
 	// models
+	Model* tree;
 	Vehicle* carModel;
 	Shader* modelShader;
+
 
 	// skybox
 	Skybox* skybox;
