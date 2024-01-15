@@ -151,14 +151,18 @@ void PhysXActorVehicle::destroy()
 	BaseVehicle::destroy();
 }
 
-void PhysXActorVehicle::setUpActor(PxScene& scene, const PxTransform& pose, const char* vehicleName)
+void PhysXActorVehicle::setUpActor(PxScene& scene, const PxTransform& pose, const char* vehicleName, PxShape* shape)
 {
 	//Give the vehicle a start pose by appylying a pose to the PxRigidDynamic associated with the vehicle. 
 	//This vehicle has components that are configured to read the pose from the PxRigidDynamic 
 	//at the start of the vehicle simulation update and to write back an updated pose at the end of the 
 	//vehicle simulation update. This allows PhysX to manage any collisions that might happen in-between 
 	//each vehicle update. This is not essential but it is anticipated that this will be a typical component 
-	//configuration. 
+	//configuration.
+	PxTransform relativePose = PxTransform(PxVec3(0.0, 2.0, -5.0));
+	shape->setLocalPose(relativePose);
+	mPhysXState.physxActor.rigidBody->attachShape(*shape);
+
 	mPhysXState.physxActor.rigidBody->setGlobalPose(pose);
 	// printf("%d of shapes\n", mPhysXState.physxActor.rigidBody->getNbShapes());
 	for (PxU32 i = 0; i < mPhysXState.physxActor.rigidBody->getNbShapes(); i++)

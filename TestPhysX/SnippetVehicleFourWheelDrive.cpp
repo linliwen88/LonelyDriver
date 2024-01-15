@@ -248,8 +248,10 @@ bool initVehicles()
 	}
 
 	//Apply a start pose to the physx actor and add it to the physx scene.
+	PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.5f, 0.5f, 0.5f), *gMaterial);
 	PxTransform pose(PxVec3(0.000000000f,  -0.0500000119f, -1.59399998f), PxQuat(PxIdentity));
-	gVehicle.setUpActor(*gScene, pose, gVehicleName);
+	gVehicle.setUpActor(*gScene, pose, gVehicleName, shape);
+	shape->release();
 
 	//Set the vehicle in 1st gear.
 	gVehicle.mEngineDriveState.gearboxState.currentGear = gVehicle.mEngineDriveParams.gearBoxParams.neutralGear + 1;
