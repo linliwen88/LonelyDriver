@@ -10,15 +10,16 @@
 #include <string>
 #endif
 
-#include "Box.h"
+#include "Drawable.h"
 
-class Light : public Box
+class Light
 {
 public:
-    Light(std::string _name, glm::vec3 _position);
+    Light(glm::vec3 _position);
 
-    Light(std::string _name, glm::vec3 _position, glm::vec3 _color,
+    Light(glm::vec3 _position, glm::vec3 _color,
           glm::vec3 _ambient, glm::vec3 _diffuse, glm::vec3 _specular);
+
 
     glm::vec3 Position;
     glm::vec3 Color;
