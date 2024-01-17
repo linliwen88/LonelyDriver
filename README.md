@@ -48,14 +48,23 @@ The car is moving in pre-choreographed sequence.
 Add Imgui and following camera (to be imporved).
 <img src="./pics/progress_20240111.gif" width="400" />
 
+1/15
+tree dosn't appear if srawn after terrain.
+
 
 ### TODOs
 - [x] clean way to render wireframes (bounding box)
 - [x] vehicle physics and user control
-- [ ] render terrain with textures.
+- [x] render terrain with textures.
+- [ ] calculate normal matrix on CPU and send in as uniform
 - [ ] implement better following camera
-- [ ] interpolate wheel rotation  
+- [ ] interpolate wheel rotation
 - [ ] add normal and environment mapping in model shder
 - [ ] change pointers to smart pointers
 - [ ] terrain, compare CPU vs GPU generation peformance (speed, memory)
 - [ ] should I move all dependencies (glfw, glm...) into solution folder?
+
+### List of Implemented Features
+- Tessellation shader for terrain.
+- Incorporated Nvidia PhysX and vehicle SDK.
+- 

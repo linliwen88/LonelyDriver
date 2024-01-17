@@ -1,10 +1,10 @@
 #include "Node.h"
 #include "Mesh.h"
 
-void Node::Draw(Shader& shader, glm::mat4 modelMat, const float wheelDirection)
+void Node::Draw(Shader& shader, glm::mat4 modelMat, const float wheelDirection, const int instanceCount)
 {
 	modelMat = modelMat * mTransformation;
-	
+
 	// rotate wheel
 	if (mName.find("front_wheel") != std::string::npos)
 	{
@@ -16,13 +16,13 @@ void Node::Draw(Shader& shader, glm::mat4 modelMat, const float wheelDirection)
 	// draw meshes of this node
 	for (int i = 0; i < mMeshes.size(); i++)
 	{
-		mMeshes[i].Draw(shader);
+		mMeshes[i].Draw(shader, instanceCount);
 	}
 
 	// draw child nodes
 	for (int i = 0; i < mChildNodes.size(); i++)
 	{
-		mChildNodes[i]->Draw(shader, modelMat, wheelDirection);
+		mChildNodes[i]->Draw(shader, modelMat, wheelDirection, instanceCount);
 	}
 }
 

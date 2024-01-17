@@ -19,10 +19,17 @@ Model::~Model()
 
 void Model::Draw(Shader& shader, glm::mat4 modelMat, const float wheelDirection)
 {
-	modelMat = glm::translate(modelMat, draw_offset);
-	modelMat = glm::scale(modelMat, glm::vec3(0.009f));
+	Model::Draw(shader, modelMat, wheelDirection, 1);
+}
 
-	rootNode->Draw(shader, modelMat, wheelDirection);
+void Model::Draw(Shader& shader, glm::mat4 modelMat, const float wheelDirection, const int instanceCount)
+{
+	// modelMat = glm::translate(modelMat, draw_offset);
+	modelMat = glm::translate(modelMat, position);
+	// modelMat = glm::scale(modelMat, glm::vec3(0.009f));
+	modelMat = glm::scale(modelMat, glm::vec3(0.01f));
+
+	rootNode->Draw(shader, modelMat, wheelDirection, instanceCount);
 }
 
 void Model::LoadModel(const std::string& path)
@@ -135,17 +142,26 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
 		std::vector<Texture> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end()); 
 
-		std::vector<Texture> normalMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+		std::vector<Texture> ambientMaps = LoadMaterialTextures(material, aiTextureType_AMBIENT, "texture_ambient");
+		textures.insert(textures.end(), ambientMaps.begin(), ambientMaps.end());
 
 		std::vector<Texture> emissiveMaps = LoadMaterialTextures(material, aiTextureType_EMISSIVE, "texture_emissive");
 		textures.insert(textures.end(), emissiveMaps.begin(), emissiveMaps.end());
 
+		std::vector<Texture> normalMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+
 		std::vector<Texture> opacityMaps = LoadMaterialTextures(material, aiTextureType_OPACITY, "texture_opacity");
-		textures.insert(textures.end(), opacityMaps.begin(), opacityMaps.end());
+		textures.insert(textures.end(), opacityMaps.begin(), opacityMaps.end()); 
 	}
+
+	//printf("\nMesh %s has %d textures\n", mesh->mName.C_Str(), textures.size());
+	//for (int i = 0; i < textures.size(); i++)
+	//{
+	//	printf("type: %s\n", textures[i].type.c_str());
+	//}
 
 	return Mesh(mesh->mName.C_Str(), vertices, indices, textures);
 }
@@ -209,7 +225,6 @@ static unsigned int TextureFromFile(const char* path, const std::string& directo
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		std::cout << "Texture loaded at path: " << path << std::endl;
 
 		stbi_image_free(data);
 

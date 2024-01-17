@@ -41,7 +41,7 @@ public:
 	std::vector<Texture> textures;
 
 	Mesh(const char* _name, std::vector<Vertex> _vertices, std::vector<unsigned int> _indices, std::vector<Texture> _textures);
-	void Draw(Shader& shader);
+	void Draw(Shader& shader, const int instanceCount);
 
 private:
 	unsigned int indicesSize;

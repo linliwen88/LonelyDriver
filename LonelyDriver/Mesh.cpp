@@ -32,13 +32,14 @@ Mesh::Mesh(const char* _name, std::vector<Vertex> _vertices, std::vector<unsigne
 	glBindVertexArray(0);
 }
 
-void Mesh::Draw(Shader& shader)
+void Mesh::Draw(Shader& shader, const int instanceCount)
 {
 	// bind appropriate textures
 	unsigned int diffuseNr = 1;
 	unsigned int specularNr = 1;
 	unsigned int normalNr = 1;
 	unsigned int heightNr = 1;
+	unsigned int opacityNr = 1;
 
 	for (unsigned int i = 0; i < textures.size(); i++)
 	{
@@ -54,16 +55,27 @@ void Mesh::Draw(Shader& shader)
 			number = std::to_string(normalNr++); // transfer unsigned int to string
 		else if (name == "texture_height")
 			number = std::to_string(heightNr++); // transfer unsigned int to string
+		else if (name == "texture_opacity")
+			number = std::to_string(opacityNr++); // transfer unsigned int to string
 
 		// now set the sampler to the correct texture unit
-		glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
+		shader.setInt((name + number).c_str(), i);
+		// glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
 		// and finally bind the texture
 		glBindTexture(GL_TEXTURE_2D, textures[i].id);
 	}
+	shader.setInt("opacityNr", opacityNr - 1);
 
 	// draw mesh
 	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
+	if (instanceCount == 1)
+	{
+		glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
+	}
+	else
+	{
+		glDrawElementsInstanced(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0, instanceCount);
+	}
 	glBindVertexArray(0);
 	glActiveTexture(GL_TEXTURE0);
 }

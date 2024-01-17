@@ -51,13 +51,14 @@ private:
 	Camera* camera;
 
 	// light
-	Light* lightCube;
-	Shader* lightShader;
+	Light* lightSource;
+	Shader* lightShader; // unused
 
 	// models
 	Model* tree;
 	Vehicle* carModel;
 	Shader* modelShader;
+	Shader* modelTreeShader;
 
 
 	// skybox
@@ -67,6 +68,7 @@ private:
 	Plane* road;
 
 	// view and projection matrices
+	glm::mat4 viewSkybox; // special view matrix for rendering skybox. Rremove translation section, only keep rotation section of camera
 	glm::mat4 view;
 	glm::mat4 projection;
 

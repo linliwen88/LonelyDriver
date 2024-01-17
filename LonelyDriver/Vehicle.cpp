@@ -11,7 +11,9 @@
 #include "stb_image.h"
 #endif
 
-Vehicle::Vehicle(std::string _name, glm::vec3 _position, const char* _path) : Model(_name, _position, _path), Box(_name, _position, 0.84097f, 0.65458f, 2.46971f, false)
+Vehicle::Vehicle(std::string _name, glm::vec3 _position, const char* _path) : 
+	Model(_name, glm::vec3(0.0f, -0.875f, 0.0f), _path), // _position set to model class is the offset between the car model and physics vehicle box, not actual position in world space
+	Box(_name, _position, 0.84097f, 0.65458f, 2.46971f, false)
 {
 	Physics::initVehicles(this->Name, glmVec3ToPhysXVec3(_position));
 }

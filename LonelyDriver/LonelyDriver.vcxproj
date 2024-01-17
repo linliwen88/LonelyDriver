@@ -205,6 +205,8 @@
     <None Include="shaders\lightSource_vshader.glsl" />
     <None Include="shaders\model_load_fshader.glsl" />
     <None Include="shaders\model_load_vshader.glsl" />
+    <None Include="shaders\model_tree_fshader.glsl" />
+    <None Include="shaders\model_tree_vshader.glsl" />
     <None Include="shaders\object_fshader.glsl" />
     <None Include="shaders\object_vshader.glsl" />
     <None Include="shaders\skybox_fshader.glsl" />

@@ -30,7 +30,7 @@ static unsigned int TextureFromFile(const char* path, const std::string& directo
 class Model
 {
 public:
-	Model(std::string _name, glm::vec3 _position, const char* path) : rootNode(nullptr), directory(""), draw_offset(glm::vec3(0.0f, -0.875f, 0.0f))
+	Model(std::string _name, glm::vec3 _position, const char* path) : rootNode(nullptr), directory(""), position(_position)
 	{
 		LoadModel(path);
 	}
@@ -38,11 +38,13 @@ public:
 	~Model();
 	
 	void Draw(Shader& shader, glm::mat4 modelMat, const float carDirection);
-
+	void Draw(Shader& shader, glm::mat4 modelMat, const float wheelDirection, const int instanceCount);
+	
 private:
 	Node* rootNode;
 	std::string directory;
-	glm::vec3 draw_offset; // the offset to translate the origin of model to match physX bounding box. Draw wireframe to see effect 
+	glm::vec3 position; // world space
+	// glm::vec3 draw_offset; // the offset to translate the origin of model to match physX bounding box. Draw wireframe to see effect 
 	std::vector<Texture> textures_loaded;
 
 	void LoadModel(const std::string& path);

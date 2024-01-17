@@ -48,7 +48,7 @@ void PrintVec4(glm::vec4 v)
 App::App(const int width, const int height, const std::string& title) :
     SCR_WIDTH(width), SCR_HEIGHT(height), TITLE(title), 
     deltaTime(1.0f / 60.0f), lastTime(0.0f), physicsTimeCounter(0.0f),
-    camera(nullptr), lightCube(nullptr), lightShader(nullptr),
+    camera(nullptr), lightSource(nullptr), lightShader(nullptr),
     tree(nullptr), carModel(nullptr), modelShader(nullptr),
     road(nullptr),
     view(glm::mat4(0.f)), projection(glm::mat4(0.f)),
@@ -89,7 +89,7 @@ App::~App()
     printf("delete shaders\n");
 
     delete carModel;
-    delete lightCube;
+    delete lightSource;
     delete road;
     delete skybox;
 }
@@ -133,6 +133,7 @@ void App::StartRender()
 
     projection = glm::perspective(glm::radians(camera->Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 10000.0f);
     view = camera->GetViewMatrix();
+    viewSkybox = glm::mat4(glm::mat3(view));
 }
 
 // Check all events and swap front and back buffers, update delta time for frame-dependent physics
@@ -157,8 +158,11 @@ int App::InitOpenGL()
     }
 
     // create camera
-    camera = new Camera(glm::vec3(0.0f, 2.0f, 20.0f));
+    camera = new Camera(glm::vec3(10.0f, 5.0f, 10.0f));
     Window::RegisterCamera(camera);
+
+    // create light
+    lightSource = new Light(glm::vec3(0.f, 10.f, 0.f));
 
     return 0;
 }
@@ -233,6 +237,8 @@ void App::CreateTerrain()
 
 
     // vertex generation
+    width = width / 4;
+    height = height / 4;
     std::vector<float> patchVertices;
 
     for (unsigned i = 0; i <= rez - 1; i++)
@@ -291,6 +297,7 @@ void App::CreateDrawableObjects()
     // load shaders
     lightShader = new Shader("shaders/lightSource_vshader.glsl", "shaders/lightSource_fshader.glsl");
     modelShader = new Shader("shaders/model_load_vshader.glsl", "shaders/model_load_fshader.glsl");
+    modelTreeShader = new Shader("shaders/model_tree_vshader.glsl", "shaders/model_tree_fshader.glsl");
 
     // tell stb_image.h to flip loaded texture's on the y-axis (before loading model).
     stbi_set_flip_vertically_on_load(false);
@@ -299,15 +306,12 @@ void App::CreateDrawableObjects()
     std::string modelPath = "assets/good-dirty-car/car.fbx";
     carModel = new Vehicle("car", glm::vec3(0.f, 1.f, 0.f), modelPath.data());
 
-    // create light cube
-    lightCube = new Light(glm::vec3(0.f, 10.f, 0.f));
-
     // create plane
     road = new Plane("plane");
 
     // load tree model
     modelPath = "assets/tree/Gledista_Triacanthos.fbx";
-    tree = new Model("tree", glm::vec3(3.f, 1.0, 3.f), modelPath.data());
+    tree = new Model("tree", glm::vec3(3.f, 0.0, 3.f), modelPath.data());
 }
 
 void App::DrawTerrain()
@@ -344,10 +348,8 @@ void App::Run()
     {
         UpdateDeltaTimeAndPhysics();
 
-        // input
-        static int carDirection = 0;
+        // input control camera and vehicle command
         Window::ProcessInput(deltaTime, Physics::getVehicleCommand());
-        // Physics::ChangeVehicleCommand(vehicleCommand);
 
         // start Imgui frame
         Window::StartGUIFrame();
@@ -359,11 +361,23 @@ void App::Run()
         }
 
         StartRender();
-        
+
+        // render skybox last for special view matrix
+        skyboxShader->use();
+        skyboxShader->setMat4("view", viewSkybox);
+        skyboxShader->setMat4("projection", projection);
+        skybox->Draw(*skyboxShader, DrawWireframe);
+
+
+        // draw models 
         // don't forget to enable shader before setting uniforms
+
+        // render terrain
+        DrawTerrain();
         modelShader->use();
 
         glm::mat4 model = glm::mat4(1.0f);
+        model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
         model = glm::scale(model, glm::vec3(5.0f, 1.0f, 300.0f));	// it's a bit too big for our scene, so scale it down
 
@@ -371,12 +385,11 @@ void App::Run()
         modelShader->setMat4("projection", projection);
         modelShader->setMat4("view", view);
         
-        modelShader->setVec3("lightAmbient", lightCube->Ambient);
-        modelShader->setVec3("lightDiffuse", lightCube->Diffuse);
-        modelShader->setVec3("lightSpecular", lightCube->Specular);
-        modelShader->setVec3("lightColor", lightCube->Color);
-
-        modelShader->setVec3("lightPosition", lightCube->Position);
+        modelShader->setVec3("lightColor", lightSource->Color);
+        modelShader->setVec3("lightAmbient", lightSource->Ambient);
+        modelShader->setVec3("lightDiffuse", lightSource->Diffuse);
+        modelShader->setVec3("lightSpecular", lightSource->Specular);
+        modelShader->setVec3("lightPosition", lightSource->Position);
         modelShader->setVec3("viewPos", camera->Position);
 
         DrawWireframe = false;
@@ -384,10 +397,11 @@ void App::Run()
         road->Draw(*modelShader, DrawWireframe);
 
         // render the car
+        modelShader->setInt("modelType", 0);
         model = objectGlobalPoses[carModel->Name];
         carModel->Draw(*modelShader, model, DrawWireframe, Physics::getVehicleCommand().steer);
-        model = glm::mat4(1.0f);
-        tree->Draw(*modelShader, model, Physics::getVehicleCommand().steer);
+        
+
 
         // render light source
         //lightShader->use();
@@ -397,15 +411,30 @@ void App::Run()
         //lightCube->Draw(*lightShader, DrawWireframe);
         // PrintVec3(lightCube->Position);
 
-        // render terrain
-        DrawTerrain();
 
-        // render skybox last for special view matrix
-        skyboxShader->use();
-        view = glm::mat4(glm::mat3(view)); // remove translation section, only keep rotation section of camera
-        skyboxShader->setMat4("view", view);
-        skyboxShader->setMat4("projection", projection);
-        skybox->Draw(*skyboxShader, DrawWireframe);
+        modelTreeShader->use();
+        model = glm::mat4(1.0f);
+        modelTreeShader->setMat4("model", model);
+        modelTreeShader->setMat4("projection", projection);
+        modelTreeShader->setMat4("view", view);
+
+        modelTreeShader->setVec3("lightColor", lightSource->Color);
+        modelTreeShader->setVec3("lightAmbient", lightSource->Ambient);
+        modelTreeShader->setVec3("lightDiffuse", lightSource->Diffuse);
+        modelTreeShader->setVec3("lightSpecular", lightSource->Specular);
+        modelTreeShader->setVec3("lightPosition", lightSource->Position);
+        modelTreeShader->setVec3("viewPos", camera->Position);
+        // render tree after solid object are drawn
+        glEnable(GL_BLEND); // enable color blending 
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        // glDepthMask(GL_FALSE); // make the z-buffer read-only
+        modelTreeShader->setInt("modelType", 1);
+        tree->Draw(*modelTreeShader, model, Physics::getVehicleCommand().steer, 20);
+        // glDepthMask(GL_TRUE); // set the depth mask bakc to read-write 
+        glDisable(GL_BLEND); // disable blending
+
+
+
 
         Window::RenderGUI();
         FinishRender();

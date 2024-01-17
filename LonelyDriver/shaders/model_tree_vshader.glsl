@@ -13,8 +13,10 @@ uniform mat4 projection;
 
 void main()
 {
+    vec4 offset = vec4((gl_InstanceID % 4) * 20.0, 0.0, (gl_InstanceID / 4) * 20.0, 0.0);
+    offset = offset - vec4(40.0, 0.0, 40.0, 0.0);
     Normal = mat3(transpose(inverse(model))) * aNormal; // TODO: calculate normal matrix on CPU and send in as uniform
     FragPos = vec3(model * vec4(aPos, 1.0)); // fragment world-space position
     TexCoords = aTexCoords;    
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    gl_Position = projection * view * ((model * vec4(aPos, 1.0)) + offset);
 }
