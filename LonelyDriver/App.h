@@ -28,14 +28,18 @@ public:
 
 private:
 	void UpdateDeltaTimeAndPhysics();
+
 	void StartRender();
+	void RenderScene();
 	void FinishRender();
 
-	int InitOpenGL();
+	int  InitOpenGL();
 	void CreateSkybox();
 	void CreateTerrain();
 	void CreateDrawableObjects();
 	void DrawTerrain();
+
+	void GenerateFrameBuffer();
 
 	// application informations
 	int SCR_WIDTH;
@@ -74,7 +78,13 @@ private:
 
 	std::unordered_map<std::string, glm::mat4> objectGlobalPoses;
 	bool DrawWireframe;
+	
+	// framebuffer for rendering depth map
+	unsigned int depthMapFBO;
+	unsigned int depthMap;
+	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 
+	// variables for terrain
 	const unsigned int NUM_PATCH_PTS = 4;
 	const unsigned rez = 20;
 	unsigned int terrainVAO;
@@ -82,6 +92,7 @@ private:
 	unsigned int terrainHeightTexture;
 	unsigned int terrainColorTexture;
 	Shader* tessShader;
+	int terrainTexWidth, terrainTexHeight;
 
 	float oneSec = 0.f;
 	int frameCount = 0;

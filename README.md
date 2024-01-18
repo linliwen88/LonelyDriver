@@ -63,6 +63,7 @@ tree dosn't appear if srawn after terrain.
 - [ ] change pointers to smart pointers
 - [ ] terrain, compare CPU vs GPU generation peformance (speed, memory)
 - [ ] should I move all dependencies (glfw, glm...) into solution folder?
+- [ ] initialize App variables at contructor
 
 ### List of Implemented Features
 - Tessellation shader for terrain.

@@ -136,6 +136,76 @@ void App::StartRender()
     viewSkybox = glm::mat4(glm::mat3(view));
 }
 
+void App::RenderScene()
+{
+    // render skybox last for special view matrix
+    skyboxShader->use();
+    skyboxShader->setMat4("view", viewSkybox);
+    skyboxShader->setMat4("projection", projection);
+    skybox->Draw(*skyboxShader, DrawWireframe);
+
+
+    // draw models 
+    // don't forget to enable shader before setting uniforms
+    DrawWireframe = false;
+
+    // render terrain
+    DrawTerrain();
+    modelShader->use();
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+    model = glm::scale(model, glm::vec3(5.0f, 1.0f, 300.0f));	// it's a bit too big for our scene, so scale it down
+
+    modelShader->setMat4("model", model);
+    modelShader->setMat4("projection", projection);
+    modelShader->setMat4("view", view);
+
+    modelShader->setVec3("lightColor", lightSource->Color);
+    modelShader->setVec3("lightAmbient", lightSource->Ambient);
+    modelShader->setVec3("lightDiffuse", lightSource->Diffuse);
+    modelShader->setVec3("lightSpecular", lightSource->Specular);
+    modelShader->setVec3("lightPosition", lightSource->Position);
+    modelShader->setVec3("viewPos", camera->Position);
+
+    // render road
+    road->Draw(*modelShader, DrawWireframe);
+
+    // render the car
+    modelShader->setInt("modelType", 0);
+    model = objectGlobalPoses[carModel->Name];
+    carModel->Draw(*modelShader, model, DrawWireframe, Physics::getVehicleCommand().steer);
+
+
+    modelTreeShader->use();
+    model = glm::mat4(1.0f);
+    modelTreeShader->setMat4("model", model);
+    modelTreeShader->setMat4("projection", projection);
+    modelTreeShader->setMat4("view", view);
+
+    modelTreeShader->setVec3("lightColor", lightSource->Color);
+    modelTreeShader->setVec3("lightAmbient", lightSource->Ambient);
+    modelTreeShader->setVec3("lightDiffuse", lightSource->Diffuse);
+    modelTreeShader->setVec3("lightSpecular", lightSource->Specular);
+    modelTreeShader->setVec3("lightPosition", lightSource->Position);
+    modelTreeShader->setVec3("viewPos", camera->Position);
+
+    modelTreeShader->setInt("terrainTexWidth", terrainTexWidth);
+    modelTreeShader->setInt("terrainTexHeight", terrainTexHeight);
+    modelTreeShader->setInt("heightMap", 10);
+    glActiveTexture(GL_TEXTURE10);
+    glBindTexture(GL_TEXTURE_2D, terrainHeightTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+    // render tree after solid object are drawn
+    glEnable(GL_BLEND); // enable color blending 
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // glDepthMask(GL_FALSE); // make the z-buffer read-only
+    modelTreeShader->setInt("modelType", 1);
+    tree->Draw(*modelTreeShader, model, Physics::getVehicleCommand().steer, 10);
+    // glDepthMask(GL_TRUE); // set the depth mask bakc to read-write 
+    glDisable(GL_BLEND); // disable blending
+}
+
 // Check all events and swap front and back buffers, update delta time for frame-dependent physics
 void App::FinishRender()
 {
@@ -191,15 +261,16 @@ void App::CreateTerrain()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // load heightmap image, create texture and generate mipmaps
-    int width, height, nChannels;
-    unsigned char* data = stbi_load("assets/terrain/Rolling Hills Height Map_32.png", &width, &height, &nChannels, 0);
+    int nChannels;
+
+    unsigned char* data = stbi_load("assets/terrain/Rolling Hills Height Map_32.png", &terrainTexWidth, &terrainTexHeight, &nChannels, 0);
     if (data)
     {
         // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, terrainTexWidth, terrainTexHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
         tessShader->setInt("heightMap", 0);
-        std::cout << "Loaded terrain heightmap of size " << height << " x " << width << std::endl;
+        std::cout << "Loaded terrain heightmap of size " << terrainTexHeight << " x " << terrainTexWidth << std::endl;
     }
     else
     {
@@ -220,14 +291,14 @@ void App::CreateTerrain()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // load color map image, create texture and generate mipmaps
-    data = stbi_load("assets/terrain/Rolling Hills Bitmap 1025_32.png", &width, &height, &nChannels, 0);
+    data = stbi_load("assets/terrain/Rolling Hills Bitmap 1025_32.png", &terrainTexWidth, &terrainTexHeight, &nChannels, 0);
     if (data)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, terrainTexWidth, terrainTexHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
         tessShader->setInt("colorMap", 1);
-        std::cout << "Loaded terrain colormap of size " << height << " x " << width << std::endl;
+        std::cout << "Loaded terrain colormap of size " << terrainTexHeight << " x " << terrainTexWidth << std::endl;
     }
     else
     {
@@ -237,35 +308,37 @@ void App::CreateTerrain()
 
 
     // vertex generation
-    width = width / 4;
-    height = height / 4;
+    // int width, height;
+
+    terrainTexWidth = terrainTexWidth / 4;
+    terrainTexHeight = terrainTexHeight / 4;
     std::vector<float> patchVertices;
 
     for (unsigned i = 0; i <= rez - 1; i++)
     {
         for (unsigned j = 0; j <= rez - 1; j++)
         {
-            patchVertices.push_back(-width / 2.0f + width * i / (float)rez); // v.x
+            patchVertices.push_back(-terrainTexWidth / 2.0f + terrainTexWidth * i / (float)rez); // v.x
             patchVertices.push_back(0.0f); // v.y
-            patchVertices.push_back(-height / 2.0f + height * j / (float)rez); // v.z
+            patchVertices.push_back(-terrainTexHeight / 2.0f + terrainTexHeight * j / (float)rez); // v.z
             patchVertices.push_back(i / (float)rez); // u
             patchVertices.push_back(j / (float)rez); // v
 
-            patchVertices.push_back(-width / 2.0f + width * (i + 1) / (float)rez); // v.x
+            patchVertices.push_back(-terrainTexWidth / 2.0f + terrainTexWidth * (i + 1) / (float)rez); // v.x
             patchVertices.push_back(0.0f); // v.y
-            patchVertices.push_back(-height / 2.0f + height * j / (float)rez); // v.z
+            patchVertices.push_back(-terrainTexHeight / 2.0f + terrainTexHeight * j / (float)rez); // v.z
             patchVertices.push_back((i + 1) / (float)rez); // u
             patchVertices.push_back(j / (float)rez); // v
 
-            patchVertices.push_back(-width / 2.0f + width * i / (float)rez); // v.x
+            patchVertices.push_back(-terrainTexWidth / 2.0f + terrainTexWidth * i / (float)rez); // v.x
             patchVertices.push_back(0.0f); // v.y
-            patchVertices.push_back(-height / 2.0f + height * (j + 1) / (float)rez); // v.z
+            patchVertices.push_back(-terrainTexHeight / 2.0f + terrainTexHeight * (j + 1) / (float)rez); // v.z
             patchVertices.push_back(i / (float)rez); // u
             patchVertices.push_back((j + 1) / (float)rez); // v
 
-            patchVertices.push_back(-width / 2.0f + width * (i + 1) / (float)rez); // v.x
+            patchVertices.push_back(-terrainTexWidth / 2.0f + terrainTexWidth * (i + 1) / (float)rez); // v.x
             patchVertices.push_back(0.0f); // v.y
-            patchVertices.push_back(-height / 2.0f + height * (j + 1) / (float)rez); // v.z
+            patchVertices.push_back(-terrainTexHeight / 2.0f + terrainTexHeight * (j + 1) / (float)rez); // v.z
             patchVertices.push_back((i + 1) / (float)rez); // u
             patchVertices.push_back((j + 1) / (float)rez); // v
         }
@@ -338,6 +411,27 @@ void App::DrawTerrain()
     // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
+// Prepare framebuffer to render depth map for shader mapping
+void App::GenerateFrameBuffer()
+{
+    glGenFramebuffers(1, &depthMapFBO);
+    glGenTextures(1, &depthMap);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+        SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+    // no rendering to color buffer for depthMapFBO
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void App::Run()
 {
     // render loop
@@ -362,79 +456,7 @@ void App::Run()
 
         StartRender();
 
-        // render skybox last for special view matrix
-        skyboxShader->use();
-        skyboxShader->setMat4("view", viewSkybox);
-        skyboxShader->setMat4("projection", projection);
-        skybox->Draw(*skyboxShader, DrawWireframe);
-
-
-        // draw models 
-        // don't forget to enable shader before setting uniforms
-
-        // render terrain
-        DrawTerrain();
-        modelShader->use();
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(5.0f, 1.0f, 300.0f));	// it's a bit too big for our scene, so scale it down
-
-        modelShader->setMat4("model", model);
-        modelShader->setMat4("projection", projection);
-        modelShader->setMat4("view", view);
-        
-        modelShader->setVec3("lightColor", lightSource->Color);
-        modelShader->setVec3("lightAmbient", lightSource->Ambient);
-        modelShader->setVec3("lightDiffuse", lightSource->Diffuse);
-        modelShader->setVec3("lightSpecular", lightSource->Specular);
-        modelShader->setVec3("lightPosition", lightSource->Position);
-        modelShader->setVec3("viewPos", camera->Position);
-
-        DrawWireframe = false;
-        // render road
-        road->Draw(*modelShader, DrawWireframe);
-
-        // render the car
-        modelShader->setInt("modelType", 0);
-        model = objectGlobalPoses[carModel->Name];
-        carModel->Draw(*modelShader, model, DrawWireframe, Physics::getVehicleCommand().steer);
-        
-
-
-        // render light source
-        //lightShader->use();
-        //lightShader->setMat4("model", objectGlobalPoses[lightCube->Name]);
-        //lightShader->setMat4("view", view);
-        //lightShader->setMat4("projection", projection);
-        //lightCube->Draw(*lightShader, DrawWireframe);
-        // PrintVec3(lightCube->Position);
-
-
-        modelTreeShader->use();
-        model = glm::mat4(1.0f);
-        modelTreeShader->setMat4("model", model);
-        modelTreeShader->setMat4("projection", projection);
-        modelTreeShader->setMat4("view", view);
-
-        modelTreeShader->setVec3("lightColor", lightSource->Color);
-        modelTreeShader->setVec3("lightAmbient", lightSource->Ambient);
-        modelTreeShader->setVec3("lightDiffuse", lightSource->Diffuse);
-        modelTreeShader->setVec3("lightSpecular", lightSource->Specular);
-        modelTreeShader->setVec3("lightPosition", lightSource->Position);
-        modelTreeShader->setVec3("viewPos", camera->Position);
-        // render tree after solid object are drawn
-        glEnable(GL_BLEND); // enable color blending 
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        // glDepthMask(GL_FALSE); // make the z-buffer read-only
-        modelTreeShader->setInt("modelType", 1);
-        tree->Draw(*modelTreeShader, model, Physics::getVehicleCommand().steer, 20);
-        // glDepthMask(GL_TRUE); // set the depth mask bakc to read-write 
-        glDisable(GL_BLEND); // disable blending
-
-
-
+        RenderScene();
 
         Window::RenderGUI();
         FinishRender();
