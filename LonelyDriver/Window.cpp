@@ -28,7 +28,7 @@ void Window::Terminate()
     glfwTerminate(); std::cout << "glfw Terminated\n";
 }
 
-void Window::StartGUIFrame()
+void Window::StartGUIFrame(float* nearPlane, float* farPlane, float* leftPlane, float* rightPlane, float* topPlane, float* bottomPlane)
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -62,9 +62,18 @@ void Window::StartGUIFrame()
         //    ImGui::EndCombo();
         //}
 
-        // ImGui::Text("");               // Display some text (you can use a format strings too)
-        // ImGui::SliderInt("samples per pixel", &samples_per_pixel, 1, 30);     // Edit 1 float using a slider from 0.0f to 1.0f
-        // ImGui::SliderInt("max ray bounce", &maxRayBounce, 1, 30);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::Text("depthMap render space");               // Display some text (you can use a format strings too)
+        //depthMap render space:
+        //nearPlane
+        //    farPlane
+        //    left
+        //    right bottom top
+        ImGui::SliderFloat("Near Plane", nearPlane, 0.1f, 100.0f);     // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("Far Plane", farPlane, 10.f, 1000.0f);     // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("Left Plane", leftPlane, -1.0f, -200.0f);     // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("Right Plane", rightPlane, 1.0f, 200.f);     // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("Bottom Plane", bottomPlane, -1.0f, -200.0f);     // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("Top Plane", topPlane, 1.0f, 200.f);     // Edit 1 float using a slider from 0.0f to 1.0f
         bool lastCameraFollow = camera->GetFollowSwitch();
         ImGui::Checkbox("Camera Follow Car", &camera->GetFollowSwitch());
         //if (lastCameraFollow != camera->GetFollowSwitch())

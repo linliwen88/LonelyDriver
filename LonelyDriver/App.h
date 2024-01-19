@@ -33,6 +33,7 @@ private:
 	void RenderScene(Shader* shader = nullptr);
 	void FinishRender();
 	void RenderDepthMap();
+	void ShowDepthMap();
 
 	int  InitOpenGL();
 	void CreateSkybox();
@@ -73,6 +74,10 @@ private:
 
 	Plane* road;
 
+	// display depth map
+	Plane* canvas;
+	Shader* displayDepthMapShader;
+
 	// view and projection matrices
 	glm::mat4 viewSkybox; // special view matrix for rendering skybox. Rremove translation section, only keep rotation section of camera
 	glm::mat4 view;
@@ -87,6 +92,12 @@ private:
 	unsigned int depthMapTexture;
 	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 	glm::mat4 lightSpaceMatrix;
+	float nearPlane = 0.1f;
+	float farPlane = 1000.f;
+	float leftPlane = -200.f;
+	float rightPlane = 200.f;
+	float topPlane = 200.f;
+	float bottomPlane = -200.f;
 
 	// variables for terrain
 	const unsigned int NUM_PATCH_PTS = 4;

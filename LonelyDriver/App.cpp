@@ -165,8 +165,8 @@ void App::RenderScene(Shader* shader)
 
         // draw road
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(5.0f, 1.0f, 300.0f));	// it's a bit too big for our scene, so scale it down
+        // model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        // model = glm::scale(model, glm::vec3(5.0f, 1.0f, 300.0f));	// it's a bit too big for our scene, so scale it down
         shader->setMat4("model", model);
         road->Draw(*shader, DrawWireframe);
 
@@ -185,7 +185,7 @@ void App::RenderScene(Shader* shader)
 
         shader->setInt("isTree", 1);
         // glDepthMask(GL_FALSE); // make the z-buffer read-only
-        tree->Draw(*shader, model, Physics::getVehicleCommand().steer, 5);
+        tree->Draw(*shader, model, Physics::getVehicleCommand().steer, 10);
         // glDepthMask(GL_TRUE); // set the depth mask bakc to read-write
 
     }
@@ -207,8 +207,8 @@ void App::RenderScene(Shader* shader)
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(5.0f, 1.0f, 300.0f));	// it's a bit too big for our scene, so scale it down
+        // model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        // model = glm::scale(model, glm::vec3(5.0f, 1.0f, 300.0f));	// it's a bit too big for our scene, so scale it down
 
         modelShader->setMat4("model", model);
         modelShader->setMat4("projection", projection);
@@ -253,7 +253,7 @@ void App::RenderScene(Shader* shader)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         // glDepthMask(GL_FALSE); // make the z-buffer read-only
         modelTreeShader->setInt("modelType", 1);
-        tree->Draw(*modelTreeShader, model, Physics::getVehicleCommand().steer, 5);
+        tree->Draw(*modelTreeShader, model, Physics::getVehicleCommand().steer, 10);
         // glDepthMask(GL_TRUE); // set the depth mask bakc to read-write 
         glDisable(GL_BLEND); // disable blending
     }
@@ -281,8 +281,10 @@ void App::RenderDepthMap()
     // configure shader and matrices
     depthShader->use();
 
-    float near_plane = 1.0f, far_plane = 7.5f;
-    glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+
+    float near_plane = 0.1f, far_plane = 10000.0f;
+    // glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+    glm::mat4 lightProjection = glm::ortho(leftPlane, rightPlane, bottomPlane, topPlane, near_plane, far_plane);
     glm::mat4 lightView = glm::lookAt(lightSource->Position,
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 1.0f, 0.0f));
@@ -294,6 +296,18 @@ void App::RenderDepthMap()
     // render scene from light source perspective
     RenderScene(depthShader);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void App::ShowDepthMap()
+{
+    displayDepthMapShader->use();
+
+    displayDepthMapShader->setInt("depthMap", 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, depthMapTexture);
+
+    canvas->Draw(*displayDepthMapShader, false);
+
 }
 
 int App::InitOpenGL()
@@ -310,7 +324,7 @@ int App::InitOpenGL()
     Window::RegisterCamera(camera);
 
     // create light
-    lightSource = new Light(glm::vec3(1.f, 10.f, 1.f));
+    lightSource = new Light(glm::vec3(1.f, 100.f, 1.f));
 
     return 0;
 }
@@ -455,14 +469,18 @@ void App::CreateDrawableObjects()
 
     // Load car model
     std::string modelPath = "assets/good-dirty-car/car.fbx";
-    carModel = new Vehicle("car", glm::vec3(0.f, 1.f, 0.f), modelPath.data());
+    carModel = new Vehicle("car", glm::vec3(-5.f, 1.f, -5.f), modelPath.data());
 
     // create plane
-    road = new Plane("plane");
+    road = new Plane("plane", 5, 300);
 
     // load tree model
     modelPath = "assets/tree/Gledista_Triacanthos.fbx";
     tree = new Model("tree", glm::vec3(3.f, 0.0, 3.f), modelPath.data());
+
+    // create canvas
+    canvas = new Plane("canvas", 2, 2);
+    displayDepthMapShader = new Shader("shaders/DisplayDepthMap_vshader.glsl", "shaders/DisplayDepthMap_fshader.glsl");
 }
 
 void App::DrawTerrain(Shader* shader)
@@ -505,8 +523,10 @@ void App::GenerateFrameBuffer()
         SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexture, 0);
@@ -530,7 +550,7 @@ void App::Run()
         Window::ProcessInput(deltaTime, Physics::getVehicleCommand());
 
         // start Imgui frame
-        Window::StartGUIFrame();
+        Window::StartGUIFrame(&nearPlane, &farPlane, &leftPlane, &rightPlane, &topPlane, &bottomPlane);
 
         // let the camera follow car
         if (camera->Follow)
@@ -541,6 +561,7 @@ void App::Run()
         RenderDepthMap();
 
         StartRender();
+        // ShowDepthMap();
         RenderScene();
 
         Window::RenderGUI();

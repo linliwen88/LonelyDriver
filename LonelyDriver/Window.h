@@ -40,7 +40,7 @@ public:
 		camera = _camera;
 
 	}
-	static void		StartGUIFrame();
+	static void		StartGUIFrame(float* nearPlane, float* farPlane, float* leftPlane, float* rightPlane, float* topPlane, float* bottomPlane);
 
 	static void		RenderGUI()
 	{

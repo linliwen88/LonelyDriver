@@ -241,5 +241,11 @@
     <None Include="shaders\depthMap_vshader.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="shaders\DisplayDepthMap_fshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\DisplayDepthMap_vshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
