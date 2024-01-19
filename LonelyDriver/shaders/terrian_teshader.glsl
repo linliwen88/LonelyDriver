@@ -5,11 +5,13 @@ uniform sampler2D heightMap;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat4 lightSpaceMatrix;
 
 in vec2 TextureCoord[];
 
 out float Height;
 out vec2 TexCoord;
+out vec4 lightSpacePostion;
 
 void main()
 {
@@ -39,6 +41,8 @@ void main()
     vec4 p0 = (p01 - p00) * u + p00;
     vec4 p1 = (p11 - p10) * u + p10;
     vec4 p = (p1 - p0) * v + p0 + normal * Height;
+
+    lightSpacePostion = lightSpaceMatrix * model * p;
 
     gl_Position = projection * view * model * p;
 }

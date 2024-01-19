@@ -30,15 +30,17 @@ private:
 	void UpdateDeltaTimeAndPhysics();
 
 	void StartRender();
-	void RenderScene();
+	void RenderScene(Shader* shader = nullptr);
 	void FinishRender();
+	void RenderDepthMap();
 
 	int  InitOpenGL();
 	void CreateSkybox();
 	void CreateTerrain();
 	void CreateDrawableObjects();
-	void DrawTerrain();
+	void DrawTerrain(Shader* shader);
 
+	void InitShadowMapping();
 	void GenerateFrameBuffer();
 
 	// application informations
@@ -80,9 +82,11 @@ private:
 	bool DrawWireframe;
 	
 	// framebuffer for rendering depth map
+	Shader* depthShader;
 	unsigned int depthMapFBO;
-	unsigned int depthMap;
+	unsigned int depthMapTexture;
 	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	glm::mat4 lightSpaceMatrix;
 
 	// variables for terrain
 	const unsigned int NUM_PATCH_PTS = 4;

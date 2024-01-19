@@ -63,6 +63,8 @@ App::App(const int width, const int height, const std::string& title) :
     // Init OpenGL and run                                                                                                                          
     InitOpenGL();
 
+    InitShadowMapping();
+
     // create skybox
     CreateSkybox();
 
@@ -93,6 +95,16 @@ App::~App()
     delete road;
     delete skybox;
 }
+
+void App::InitShadowMapping()
+{
+    // generate FBO for depth map rendering
+    GenerateFrameBuffer();
+
+    // set shader to render depth map
+    depthShader = new Shader("shaders/depthMap_vshader.glsl", "shaders/depthMap_fshader.glsl");
+}
+
 
 void App::UpdateDeltaTimeAndPhysics()
 {
@@ -128,6 +140,7 @@ void App::UpdateDeltaTimeAndPhysics()
 // Set camera view and projection tranformations
 void App::StartRender()
 {
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -136,74 +149,114 @@ void App::StartRender()
     viewSkybox = glm::mat4(glm::mat3(view));
 }
 
-void App::RenderScene()
+// render the entire scence with designated shader or 
+// render with specialized shader (when parameter shader is nullptr) for each drawable objects
+void App::RenderScene(Shader* shader)
 {
-    // render skybox last for special view matrix
-    skyboxShader->use();
-    skyboxShader->setMat4("view", viewSkybox);
-    skyboxShader->setMat4("projection", projection);
-    skybox->Draw(*skyboxShader, DrawWireframe);
+    if (shader)
+    {
+        shader->use();
+        shader->setInt("isTree", 0);
+        DrawWireframe = false;
+        glm::mat4 model = glm::mat4(1.0f);
+
+        // draw terrain
+        DrawTerrain(shader);
+
+        // draw road
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(5.0f, 1.0f, 300.0f));	// it's a bit too big for our scene, so scale it down
+        shader->setMat4("model", model);
+        road->Draw(*shader, DrawWireframe);
+
+        // draw vehicle
+        model = objectGlobalPoses[carModel->Name];
+        carModel->Draw(*shader, model, DrawWireframe, Physics::getVehicleCommand().steer);
+
+        // draw trees
+        model = glm::mat4(1.0f);
+        shader->setMat4("model", model);
+        shader->setInt("terrainTexWidth", terrainTexWidth);
+        shader->setInt("terrainTexHeight", terrainTexHeight);
+        shader->setInt("heightMap", 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, terrainHeightTexture);
+
+        shader->setInt("isTree", 1);
+        // glDepthMask(GL_FALSE); // make the z-buffer read-only
+        tree->Draw(*shader, model, Physics::getVehicleCommand().steer, 5);
+        // glDepthMask(GL_TRUE); // set the depth mask bakc to read-write
+
+    }
+    else
+    {
+        // render skybox last for special view matrix
+        skyboxShader->use();
+        skyboxShader->setMat4("view", viewSkybox);
+        skyboxShader->setMat4("projection", projection);
+        skybox->Draw(*skyboxShader, DrawWireframe);
+
+        // draw models 
+        // don't forget to enable shader before setting uniforms
+        DrawWireframe = false;
+
+        // render terrain
+        DrawTerrain(tessShader);
+        modelShader->use();
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(5.0f, 1.0f, 300.0f));	// it's a bit too big for our scene, so scale it down
+
+        modelShader->setMat4("model", model);
+        modelShader->setMat4("projection", projection);
+        modelShader->setMat4("view", view);
+
+        modelShader->setVec3("lightColor", lightSource->Color);
+        modelShader->setVec3("lightAmbient", lightSource->Ambient);
+        modelShader->setVec3("lightDiffuse", lightSource->Diffuse);
+        modelShader->setVec3("lightSpecular", lightSource->Specular);
+        modelShader->setVec3("lightPosition", lightSource->Position);
+        modelShader->setVec3("viewPos", camera->Position);
+
+        // render road
+        road->Draw(*modelShader, DrawWireframe);
+
+        // render the car
+        modelShader->setInt("modelType", 0);
+        model = objectGlobalPoses[carModel->Name];
+        carModel->Draw(*modelShader, model, DrawWireframe, Physics::getVehicleCommand().steer);
 
 
-    // draw models 
-    // don't forget to enable shader before setting uniforms
-    DrawWireframe = false;
+        modelTreeShader->use();
+        model = glm::mat4(1.0f);
+        modelTreeShader->setMat4("model", model);
+        modelTreeShader->setMat4("projection", projection);
+        modelTreeShader->setMat4("view", view);
 
-    // render terrain
-    DrawTerrain();
-    modelShader->use();
+        modelTreeShader->setVec3("lightColor", lightSource->Color);
+        modelTreeShader->setVec3("lightAmbient", lightSource->Ambient);
+        modelTreeShader->setVec3("lightDiffuse", lightSource->Diffuse);
+        modelTreeShader->setVec3("lightSpecular", lightSource->Specular);
+        modelTreeShader->setVec3("lightPosition", lightSource->Position);
+        modelTreeShader->setVec3("viewPos", camera->Position);
 
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-    model = glm::scale(model, glm::vec3(5.0f, 1.0f, 300.0f));	// it's a bit too big for our scene, so scale it down
-
-    modelShader->setMat4("model", model);
-    modelShader->setMat4("projection", projection);
-    modelShader->setMat4("view", view);
-
-    modelShader->setVec3("lightColor", lightSource->Color);
-    modelShader->setVec3("lightAmbient", lightSource->Ambient);
-    modelShader->setVec3("lightDiffuse", lightSource->Diffuse);
-    modelShader->setVec3("lightSpecular", lightSource->Specular);
-    modelShader->setVec3("lightPosition", lightSource->Position);
-    modelShader->setVec3("viewPos", camera->Position);
-
-    // render road
-    road->Draw(*modelShader, DrawWireframe);
-
-    // render the car
-    modelShader->setInt("modelType", 0);
-    model = objectGlobalPoses[carModel->Name];
-    carModel->Draw(*modelShader, model, DrawWireframe, Physics::getVehicleCommand().steer);
-
-
-    modelTreeShader->use();
-    model = glm::mat4(1.0f);
-    modelTreeShader->setMat4("model", model);
-    modelTreeShader->setMat4("projection", projection);
-    modelTreeShader->setMat4("view", view);
-
-    modelTreeShader->setVec3("lightColor", lightSource->Color);
-    modelTreeShader->setVec3("lightAmbient", lightSource->Ambient);
-    modelTreeShader->setVec3("lightDiffuse", lightSource->Diffuse);
-    modelTreeShader->setVec3("lightSpecular", lightSource->Specular);
-    modelTreeShader->setVec3("lightPosition", lightSource->Position);
-    modelTreeShader->setVec3("viewPos", camera->Position);
-
-    modelTreeShader->setInt("terrainTexWidth", terrainTexWidth);
-    modelTreeShader->setInt("terrainTexHeight", terrainTexHeight);
-    modelTreeShader->setInt("heightMap", 10);
-    glActiveTexture(GL_TEXTURE10);
-    glBindTexture(GL_TEXTURE_2D, terrainHeightTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
-    // render tree after solid object are drawn
-    glEnable(GL_BLEND); // enable color blending 
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    // glDepthMask(GL_FALSE); // make the z-buffer read-only
-    modelTreeShader->setInt("modelType", 1);
-    tree->Draw(*modelTreeShader, model, Physics::getVehicleCommand().steer, 10);
-    // glDepthMask(GL_TRUE); // set the depth mask bakc to read-write 
-    glDisable(GL_BLEND); // disable blending
+        modelTreeShader->setInt("terrainTexWidth", terrainTexWidth);
+        modelTreeShader->setInt("terrainTexHeight", terrainTexHeight);
+        modelTreeShader->setInt("heightMap", 10);
+        glActiveTexture(GL_TEXTURE10);
+        glBindTexture(GL_TEXTURE_2D, terrainHeightTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+        // render tree after solid object are drawn
+        glEnable(GL_BLEND); // enable color blending 
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        // glDepthMask(GL_FALSE); // make the z-buffer read-only
+        modelTreeShader->setInt("modelType", 1);
+        tree->Draw(*modelTreeShader, model, Physics::getVehicleCommand().steer, 5);
+        // glDepthMask(GL_TRUE); // set the depth mask bakc to read-write 
+        glDisable(GL_BLEND); // disable blending
+    }
 }
 
 // Check all events and swap front and back buffers, update delta time for frame-dependent physics
@@ -216,6 +269,31 @@ void App::FinishRender()
 
     float puaseTime = Window::GetTime() - pauseTimeStart;
     if (puaseTime > 0.2f) lastTime += puaseTime;
+}
+
+void App::RenderDepthMap()
+{
+    // 1. first render to depth map
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    // configure shader and matrices
+    depthShader->use();
+
+    float near_plane = 1.0f, far_plane = 7.5f;
+    glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+    glm::mat4 lightView = glm::lookAt(lightSource->Position,
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f));
+    lightSpaceMatrix = lightProjection * lightView;
+
+    depthShader->setMat4("lightSpaceMatrix", lightSpaceMatrix);
+    // glUniformMatrix4fv(lightSpaceMatrixLocation, 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+
+    // render scene from light source perspective
+    RenderScene(depthShader);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 int App::InitOpenGL()
@@ -232,7 +310,7 @@ int App::InitOpenGL()
     Window::RegisterCamera(camera);
 
     // create light
-    lightSource = new Light(glm::vec3(0.f, 10.f, 0.f));
+    lightSource = new Light(glm::vec3(1.f, 10.f, 1.f));
 
     return 0;
 }
@@ -387,23 +465,29 @@ void App::CreateDrawableObjects()
     tree = new Model("tree", glm::vec3(3.f, 0.0, 3.f), modelPath.data());
 }
 
-void App::DrawTerrain()
+void App::DrawTerrain(Shader* shader)
 {
-    tessShader->use();
+    shader->use();
     glm::mat4 model = glm::mat4(1.0f);
-    tessShader->setMat4("model", model);
-    tessShader->setMat4("view", view);
-    tessShader->setMat4("projection", projection);
+    shader->setMat4("model", model);
+    shader->setMat4("view", view);
+    shader->setMat4("projection", projection);
+    shader->setMat4("lightSpaceMatrix", lightSpaceMatrix);
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glBindVertexArray(terrainVAO);
 
-    tessShader->setInt("heightMap", 0);
+    shader->setInt("heightMap", 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, terrainHeightTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
 
-    tessShader->setInt("colorMap", 1);
+    shader->setInt("colorMap", 1);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, terrainColorTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+
+    shader->setInt("shadowMap", 2);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, depthMapTexture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+
 
     glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
     glBindVertexArray(0);
@@ -415,8 +499,8 @@ void App::DrawTerrain()
 void App::GenerateFrameBuffer()
 {
     glGenFramebuffers(1, &depthMapFBO);
-    glGenTextures(1, &depthMap);
-    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glGenTextures(1, &depthMapTexture);
+    glBindTexture(GL_TEXTURE_2D, depthMapTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
         SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -425,7 +509,7 @@ void App::GenerateFrameBuffer()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexture, 0);
     // no rendering to color buffer for depthMapFBO
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
@@ -454,8 +538,9 @@ void App::Run()
             camera->SetFollow(carModel->GetPosition(), carModel->GetRotation());
         }
 
-        StartRender();
+        RenderDepthMap();
 
+        StartRender();
         RenderScene();
 
         Window::RenderGUI();

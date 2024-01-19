@@ -201,6 +201,8 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\depthMap_fshader.glsl" />
+    <None Include="shaders\depthMap_vshader.glsl" />
     <None Include="shaders\lightSource_fshader.glsl" />
     <None Include="shaders\lightSource_vshader.glsl" />
     <None Include="shaders\model_load_fshader.glsl" />
