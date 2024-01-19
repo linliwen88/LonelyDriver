@@ -1,8 +1,8 @@
 #include "Plane.h"
 
-Plane::Plane(std::string _name) : Drawable(_name), m_VAO(-1), m_VBO(-1), m_EBO(-1)
+Plane::Plane(std::string _name, const float _width, const float _height) : Drawable(_name), m_VAO(-1), m_VBO(-1), m_EBO(-1)
 {
-	SetUpPlane();
+	SetUpPlane(_width, _height);
 }
 
 void Plane::Draw(Shader& shader, bool drawWireframe)
@@ -15,14 +15,14 @@ void Plane::Draw(Shader& shader, bool drawWireframe)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void Plane::SetUpPlane()
+void Plane::SetUpPlane(const float _width, const float _height)
 {
 	float planeVertices[] = {
-		// position			// normal vectors
-		-0.5,  0.0, -0.5,	0.0, 1.0, 0.0,		// lower left
-		 0.5,  0.0, -0.5,   0.0, 1.0, 0.0,		// lower right
-		-0.5,  0.0,  0.5,   0.0, 1.0, 0.0,		// upper left
-		 0.5,  0.0,  0.5,   0.0, 1.0, 0.0		// upper right
+		// position							   // normal vectors
+		-0.5 * _width,  0.0, -0.5 * _height,   0.0, 1.0, 0.0,		// lower left
+		 0.5 * _width,  0.0, -0.5 * _height,   0.0, 1.0, 0.0,		// lower right
+		-0.5 * _width,  0.0,  0.5 * _height,   0.0, 1.0, 0.0,		// upper left
+		 0.5 * _width,  0.0,  0.5 * _height,   0.0, 1.0, 0.0		// upper right
 	};
 
 	unsigned int indices[] = {

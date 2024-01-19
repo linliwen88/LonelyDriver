@@ -19,7 +19,7 @@
 class Plane : public Drawable
 {
 public:
-	Plane(std::string _name);
+	Plane(std::string _name, const float _width, const float _height);
 	~Plane()
 	{
 		printf("deleting %s vao, vbo, and ebo\n", Name.c_str());
@@ -31,7 +31,7 @@ public:
 	void Draw(Shader& shader, bool drawWireframe) override;
 
 private:
-	void SetUpPlane();
+	void SetUpPlane(const float _width, const float _height);
 
 	unsigned int m_VAO;
 	unsigned int m_VBO;
