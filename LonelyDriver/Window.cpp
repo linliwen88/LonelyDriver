@@ -62,7 +62,7 @@ void Window::StartGUIFrame(float* nearPlane, float* farPlane, float* leftPlane, 
         //    ImGui::EndCombo();
         //}
 
-        ImGui::Text("depthMap render space");               // Display some text (you can use a format strings too)
+        ImGui::Text("depthMap render frustrum");               // Display some text (you can use a format strings too)
         //depthMap render space:
         //nearPlane
         //    farPlane
