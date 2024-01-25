@@ -2,8 +2,11 @@
 
 in float Height;
 in vec2 TexCoord;
+in vec4 Normal;
 in vec4 lightSpacePostion;
+in vec4 worldSpaceFragPos;
 
+uniform vec3 lightPosition;
 uniform sampler2D colorMap;
 uniform sampler2D shadowMap;
 
@@ -20,7 +23,9 @@ float ShaderCalculation(vec4 fragPosLightSpace)
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
     // check whether current frag pos is in shadow
-    float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
+    vec3 lightDir = lightPosition - worldSpaceFragPos.xyz;
+    float bias = max(0.0005 * (1.0 - dot(Normal.xyz, lightDir)), 0.0001); // TODO: adjust bias to eliminate shadow acne
+    float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
 
     return shadow;
 }
