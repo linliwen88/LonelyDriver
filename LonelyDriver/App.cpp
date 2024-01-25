@@ -191,7 +191,6 @@ void App::RenderScene(Shader* shader)
     }
     else
     {
-        // render skybox last for special view matrix
         skyboxShader->use();
         skyboxShader->setMat4("view", viewSkybox);
         skyboxShader->setMat4("projection", projection);
@@ -291,11 +290,12 @@ void App::RenderDepthMap()
     lightSpaceMatrix = lightProjection * lightView;
 
     depthShader->setMat4("lightSpaceMatrix", lightSpaceMatrix);
-    // glUniformMatrix4fv(lightSpaceMatrixLocation, 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
 
     // render scene from light source perspective
+    glCullFace(GL_FRONT); // front face culling to avoid peter-panning
     RenderScene(depthShader);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glCullFace(GL_BACK); // reset original culling face
 }
 
 void App::ShowDepthMap()
@@ -491,6 +491,7 @@ void App::DrawTerrain(Shader* shader)
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
     shader->setMat4("lightSpaceMatrix", lightSpaceMatrix);
+    shader->setVec3("lightPosition", lightSource->Position);
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glBindVertexArray(terrainVAO);
 
