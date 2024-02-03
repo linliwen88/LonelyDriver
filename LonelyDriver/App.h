@@ -90,14 +90,15 @@ private:
 	Shader* depthShader;
 	unsigned int depthMapFBO;
 	unsigned int depthMapTexture;
-	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	// const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	const unsigned int SHADOW_WIDTH = 4096, SHADOW_HEIGHT = 4096;
 	glm::mat4 lightSpaceMatrix;
 	float nearPlane = 0.1f;
-	float farPlane = 1000.f;
-	float leftPlane = -200.f;
-	float rightPlane = 200.f;
-	float topPlane = 200.f;
-	float bottomPlane = -200.f;
+	float farPlane = 100.f;
+	float leftPlane = -50.f;
+	float rightPlane = 50.f;
+	float topPlane = 50.f;
+	float bottomPlane = -50.f;
 
 	// variables for terrain
 	const unsigned int NUM_PATCH_PTS = 4;

@@ -48,8 +48,17 @@ The car is moving in pre-choreographed sequence.
 Add Imgui and following camera (to be imporved).
 <img src="./pics/progress_20240111.gif" width="400" />
 
-1/15
-tree dosn't appear if srawn after terrain.
+- 1/15/2024
+Instance drawing trees with height. \
+<img src="./pics/progress_20240116_instance_draw_tree_with_height.png" width="400" />
+> [!WARNING]  
+> Tree dosn't appear if srawn after terrain.
+
+- 1/24/2024
+Shadow mappping (shadows are only drarwn on terrain at the momment) \
+<img src="./pics/progress_20240124_instanced_tree_and_shadow_mapping.gif" width="400" />
+
+
 
 
 ### TODOs
@@ -61,11 +70,10 @@ tree dosn't appear if srawn after terrain.
 - [ ] interpolate wheel rotation
 - [ ] add normal and environment mapping in model shder
 - [ ] change pointers to smart pointers
-- [ ] terrain, compare CPU vs GPU generation peformance (speed, memory)
 - [ ] should I move all dependencies (glfw, glm...) into solution folder?
 - [ ] initialize App variables at contructor
 
 ### List of Implemented Features
 - Tessellation shader for terrain.
 - Incorporated Nvidia PhysX and vehicle SDK.
-- 
+- Shadow mapping.

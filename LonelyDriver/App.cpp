@@ -559,6 +559,7 @@ void App::Run()
             camera->SetFollow(carModel->GetPosition(), carModel->GetRotation());
         }
 
+        // TODO: let sun (directional light source) and camera follow car, so that depth map can render scene near car with higher resolution 
         RenderDepthMap();
 
         StartRender();

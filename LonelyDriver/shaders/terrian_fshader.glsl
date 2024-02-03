@@ -12,7 +12,7 @@ uniform sampler2D shadowMap;
 
 out vec4 FragColor;
 
-float ShaderCalculation(vec4 fragPosLightSpace)
+float ShadowCalculation(vec4 fragPosLightSpace)
 {
     // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -24,19 +24,28 @@ float ShaderCalculation(vec4 fragPosLightSpace)
     float currentDepth = projCoords.z;
     // check whether current frag pos is in shadow
     vec3 lightDir = lightPosition - worldSpaceFragPos.xyz;
-    float bias = max(0.0005 * (1.0 - dot(Normal.xyz, lightDir)), 0.0001); // TODO: adjust bias to eliminate shadow acne
-    float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
+    float bias = max(0.0005 * (1.0 - dot(Normal.xyz, lightDir)), 0.0001); // TODO: tweak bias min max value to eliminate shadow acne
+
+    // PCF (percentage-closer filtering)
+    float shadow = 0.0f;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+        }
+    }
+    shadow /= 9.0;
 
     return shadow;
 }
 
 void main()
 {
-    // float h = (Height + 16) / 64.0f;
-    // FragColor = vec4(h, h, h, 1.0);
-
     vec3 color = texture(colorMap, TexCoord).xyz;
-    float shadow = ShaderCalculation(lightSpacePostion);
-    FragColor = (shadow == 1.0)?  0.5 * vec4(color, 1.0) : vec4(color, 1.0);
-    // FragColor = vec4(Height, Height, Height, 1.0);
+    float shadow = ShadowCalculation(lightSpacePostion);
+    // TODO: render terrain with specular, diffuse, ambient lighting
+    FragColor = (shadow >= 0.1)? (1.0 - (shadow * 0.7)) * vec4(color, 1.0) : vec4(color, 1.0);
 }
