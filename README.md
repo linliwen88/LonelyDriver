@@ -49,8 +49,9 @@ Add Imgui and following camera (to be imporved).
 <img src="./pics/progress_20240111.gif" width="400" />
 
 - 1/15/2024
-Instance drawing trees with height. \
+Render terrain with color map. Instance drawing trees with height. \
 <img src="./pics/progress_20240116_instance_draw_tree_with_height.png" width="400" />
+
 > [!WARNING]  
 > Tree dosn't appear if srawn after terrain.
 
@@ -59,7 +60,10 @@ Shadow mappping (shadows are only drarwn on terrain at the momment) \
 <img src="./pics/progress_20240124_instanced_tree_and_shadow_mapping.gif" width="400" />
 
 
-
+### List of Implemented Features
+- Tessellation shader for terrain.
+- Incorporated Nvidia PhysX and vehicle SDK.
+- Shadow mapping.
 
 ### TODOs
 - [x] clean way to render wireframes (bounding box)
@@ -72,8 +76,3 @@ Shadow mappping (shadows are only drarwn on terrain at the momment) \
 - [ ] change pointers to smart pointers
 - [ ] should I move all dependencies (glfw, glm...) into solution folder?
 - [ ] initialize App variables at contructor
-
-### List of Implemented Features
-- Tessellation shader for terrain.
-- Incorporated Nvidia PhysX and vehicle SDK.
-- Shadow mapping.
