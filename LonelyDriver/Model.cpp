@@ -6,11 +6,6 @@
 #include "Converter.h"
 #endif
 
-#ifndef __INCLUDE_STB_IMAGE__
-#define __INCLUDE_STB_IMAGE__
-#include "stb_image.h"
-#endif
-
 Model::~Model()
 {
 	printf("deleting model nodes\n");

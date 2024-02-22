@@ -44,7 +44,7 @@ class Physics
 public:
 	static int  Init();
 	static void AddActor(const physx::PxGeometryType::Enum& geoType, Drawable* object);
-	static void CreateGround();
+	static void CreateGround(const int& terrainTexWidth, const int& terrainTexHeight, const int& nChannels, unsigned char* td);
 	static void initMaterialFrictionTable();
 	static int  initVehicles(std::string& gVehicleName, physx::PxVec3 position);
 	static void Step(float deltaTime, std::unordered_map<std::string, glm::mat4>& objectGlobalPoses, glm::vec3& vehiclePosition, glm::vec4& vehicleRotation);

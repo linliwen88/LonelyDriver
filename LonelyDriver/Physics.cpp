@@ -7,6 +7,8 @@
 #include "Converter.h"
 #endif
 
+#include <iostream>
+
 #define PVD_HOST "127.0.0.1"
 
 #include <ctype.h>
@@ -50,7 +52,7 @@ const physx::PxU32 gNbCommands = sizeof(gCommands) / sizeof(Command);
 physx::PxReal gCommandTime = 0.0f;			//Time spent on current command
 physx::PxU32 gCommandProgress = 0;			//The id of the current command.
 
-Command Physics::CurrentVehicleCommand = { 0.0f,0.0f, 0.0f, gTargetGearCommand, 5.0 };
+Command Physics::CurrentVehicleCommand = { 0.0f, 0.0f, 0.0f, gTargetGearCommand, 5.0 };
 
 
 int Physics::Init()
@@ -80,15 +82,120 @@ int Physics::Init()
     }
     gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
     
-    Physics::CreateGround();
     return true;
 }
 
-void Physics::CreateGround()
+void Physics::CreateGround(const int& terrainTexWidth, const int& terrainTexHeight, const int& nChannels, unsigned char* data)
 {
-    groundPlane = PxCreatePlane(*gPhysics, physx::PxPlane(0, 1.0, 0, 0), *gMaterial);
-    groundPlane->setName("ground");
-    gScene->addActor(*groundPlane);
+    //// create simple plane
+    //groundPlane = PxCreatePlane(*gPhysics, physx::PxPlane(0, 1.0, 0, 0), *gMaterial);
+    //groundPlane->setName("ground");
+    //gScene->addActor(*groundPlane);
+
+    // create heightmap data
+    // heightfeild dimensions
+    const physx::PxU32 nRows = terrainTexHeight;
+    const physx::PxU32 nCols = terrainTexWidth;
+
+    // create the actor for heightfield
+    physx::PxRigidStatic* heightfieldActor = gPhysics->createRigidStatic(physx::PxTransform(physx::PxIdentity));
+
+    // iterate over source data points and find minimum and maximum heights
+    // physx::PxReal minHeight = PX_MAX_F32;
+    // physx::PxReal maxHeight = -PX_MAX_F32;
+    //for (physx::PxU32 s = 0; s < nRows * nCols; s++)
+    //{
+    //    physx::PxReal height = data[s * nChannels];
+    //    minHeight = physx::PxMin(minHeight, height);
+    //    maxHeight = physx::PxMax(maxHeight ,height);
+    //}
+    physx::PxReal minHeight = (physx::PxReal)0x00;
+    physx::PxReal maxHeight = (physx::PxReal)UCHAR_MAX;
+
+
+    // compute maximum height difference
+    physx::PxReal deltaHeight = maxHeight - minHeight;
+
+    // maximum positive value that can be represented with signed 16 bit integer
+    physx::PxReal quantization = (physx::PxReal)0x7fff;
+
+    // compute heightScale such that the forward transform will generate the closest point
+    // to the source
+    // clamp to at least PX_MIN_HEIGHTFIELD_Y_SCALE to respect the PhysX API specs
+    physx::PxReal heightScale = physx::PxMax(deltaHeight / quantization, PX_MIN_HEIGHTFIELD_Y_SCALE);
+    heightScale = heightScale / 3.0f;
+    printf("heightScale: %f\n", heightScale);
+
+    physx::PxHeightFieldSample* hfSamples = new physx::PxHeightFieldSample[nRows * nCols];
+
+    physx::PxU32 index = 0;
+    for (physx::PxU32 row = 0; row < nRows; row++)
+    {
+        for (physx::PxU32 col = 0; col < nCols; col++)
+        {
+            // get average hieght of neighboring samples
+            physx::PxReal sample = 0.0f;
+            for (int i = -1; i < 2; i++)
+            {
+                int r = row + i;
+                r = (r < 0 || r >= nRows) ? row : r;
+                for (int j = -1; j < 2; j++)
+                {
+                    int c = col + j;
+                    c = (c < 0 || c >= nCols) ? col : c;
+
+                    sample += data[((r * nCols) + c) * nChannels];
+                }
+            }
+            sample /= 9.0f;
+
+            physx::PxI16 height;
+            // height = physx::PxI16(quantization * ((((physx::PxReal)data[((row * nCols) + col) * nChannels] - minHeight) / deltaHeight) - (10.f / UCHAR_MAX)));
+            height = physx::PxI16(quantization * (((sample - minHeight) / deltaHeight) - (10.f / UCHAR_MAX)));
+
+            /*std::cout << "data: " << (physx::PxReal)data[((row * nCols) + col) * nChannels] << std::endl;
+            std::cout << "data after scaling: " << ((((physx::PxReal)data[((row * nCols) + col) * nChannels] - minHeight) / deltaHeight) - (10.f / UCHAR_MAX)) << std::endl;
+            std::cout << "data after quantization: " << quantization * ((((physx::PxReal)data[((row * nCols) + col) * nChannels] - minHeight) / deltaHeight) - (10.f / UCHAR_MAX)) << std::endl;
+            std::cout << "height: " << height << std::endl;*/
+
+            physx::PxHeightFieldSample& smp = hfSamples[(col * nRows) + row];
+            smp.height = height;
+            smp.materialIndex0 = index;
+            smp.materialIndex1 = index;
+            //if (userFlipEdge)
+            //    smp.setTessFlag();
+        }
+    }
+
+    // Build PxHeightFieldDesc from samples
+    physx::PxHeightFieldDesc terrainDesc;
+    terrainDesc.format = physx::PxHeightFieldFormat::eS16_TM;
+    terrainDesc.nbColumns = nCols;
+    terrainDesc.nbRows = nRows;
+    terrainDesc.samples.data = hfSamples;
+    terrainDesc.samples.stride = sizeof(physx::PxHeightFieldSample);
+    terrainDesc.flags = physx::PxHeightFieldFlags();
+
+    physx::PxHeightFieldGeometry hfGeom;
+    // physx::PxReal terrainWidth = 1000;
+    hfGeom.columnScale = (float)(terrainTexWidth / 4.0f) / (nCols - 1); // compute column and row scale from input terrain
+    // height grid
+    hfGeom.rowScale = (float)(terrainTexHeight / 4.0f) / (nRows - 1);
+    hfGeom.heightScale = deltaHeight != 0.0f ? heightScale : 1.0f;
+    hfGeom.heightField = PxCreateHeightField(terrainDesc, gPhysics->getPhysicsInsertionCallback());
+
+    delete[] hfSamples;
+
+    physx::PxTransform localPose;
+    localPose.p = physx::PxVec3(-((float)(terrainTexWidth / 4.0f) * 0.5f),    // make it so that the center of the
+        minHeight, -((float)(terrainTexHeight / 4.0f) * 0.5f));         // heightfield is at world (0,minHeight,0)
+    localPose.q = physx::PxQuat(physx::PxIdentity);
+    physx::PxU16 nbMaterials = 1;
+    physx::PxShape* shape = physx::PxRigidActorExt::createExclusiveShape(*heightfieldActor, hfGeom, &gMaterial, nbMaterials);
+    shape->setLocalPose(localPose);
+
+    heightfieldActor->setName("ground");
+    gScene->addActor(*heightfieldActor);
 }
 
 void Physics::initMaterialFrictionTable()
@@ -166,8 +273,6 @@ int Physics::initVehicles(std::string& gVehicleName, physx::PxVec3 position)
 /// <param name="object">the the object to put into scene </param>
 void Physics::AddActor(const physx::PxGeometryType::Enum& geoType, Drawable* object)
 {
-    gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
-
     if (geoType == physx::PxGeometryType::eBOX)
     {
         // create a box
@@ -285,7 +390,7 @@ void Physics::CleanUp()
     // clean up vehicle
     gVehicle.destroy();
     // clean up ground plane
-    groundPlane->release();
+    // groundPlane->release();
 
     // clean up physX
     PX_RELEASE(gMaterial);

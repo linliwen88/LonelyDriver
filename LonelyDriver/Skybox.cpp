@@ -1,10 +1,5 @@
 #include "Skybox.h"
 
-#ifndef __INCLUDE_STB_IMAGE__
-#define __INCLUDE_STB_IMAGE__
-#include "stb_image.h"
-#endif
-
 #include <iostream>
 #include <vector>
 

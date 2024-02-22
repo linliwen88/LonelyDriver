@@ -17,11 +17,6 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-#ifndef __INCLUDE_STB_IMAGE__
-#define __INCLUDE_STB_IMAGE__
-#include "stb_image.h"
-#endif
-
 #include <iostream>
 
 #include "Window.h"
@@ -167,8 +162,9 @@ void App::RenderScene(Shader* shader)
         model = glm::mat4(1.0f);
         // model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
         // model = glm::scale(model, glm::vec3(5.0f, 1.0f, 300.0f));	// it's a bit too big for our scene, so scale it down
-        shader->setMat4("model", model);
-        road->Draw(*shader, DrawWireframe);
+        // 
+        // shader->setMat4("model", model);
+        // road->Draw(*shader, DrawWireframe);
 
         // draw vehicle
         model = objectGlobalPoses[carModel->Name];
@@ -221,7 +217,7 @@ void App::RenderScene(Shader* shader)
         modelShader->setVec3("viewPos", camera->Position);
 
         // render road
-        road->Draw(*modelShader, DrawWireframe);
+        // road->Draw(*modelShader, DrawWireframe);
 
         // render the car
         modelShader->setInt("modelType", 0);
@@ -320,7 +316,7 @@ int App::InitOpenGL()
     }
 
     // create camera
-    camera = new Camera(glm::vec3(10.0f, 5.0f, 10.0f));
+    camera = new Camera(glm::vec3(50.0f, 20.0f, 0.0f));
     Window::RegisterCamera(camera);
 
     // create light
@@ -363,11 +359,21 @@ void App::CreateTerrain()
 
         tessShader->setInt("heightMap", 0);
         std::cout << "Loaded terrain heightmap of size " << terrainTexHeight << " x " << terrainTexWidth << std::endl;
+       /* for (int row = 0; row < terrainTexHeight; row++)
+        {
+            for (int col = 0; col < terrainTexWidth; col++)
+            {
+                printf("%d ", data[(row * terrainTexHeight + col) * nChannels]);
+            }
+            printf("\n");
+        }*/
+        Physics::CreateGround(terrainTexWidth, terrainTexHeight, nChannels, data);
     }
     else
     {
         std::cout << "Failed to load texture" << std::endl;
     }
+    
     stbi_image_free(data);
 
     // ----------------------
@@ -400,8 +406,6 @@ void App::CreateTerrain()
 
 
     // vertex generation
-    // int width, height;
-
     terrainTexWidth = terrainTexWidth / 4;
     terrainTexHeight = terrainTexHeight / 4;
     std::vector<float> patchVertices;
@@ -469,7 +473,7 @@ void App::CreateDrawableObjects()
 
     // Load car model
     std::string modelPath = "assets/good-dirty-car/car.fbx";
-    carModel = new Vehicle("car", glm::vec3(-5.f, 1.f, -5.f), modelPath.data());
+    carModel = new Vehicle("car", glm::vec3(5.f, 5.f, 0.f), modelPath.data());
 
     // create plane
     road = new Plane("plane", 5, 300);
@@ -478,7 +482,7 @@ void App::CreateDrawableObjects()
     modelPath = "assets/tree/Gledista_Triacanthos.fbx";
     tree = new Model("tree", glm::vec3(3.f, 0.0, 3.f), modelPath.data());
 
-    // create canvas
+    // create canvas depth map display
     canvas = new Plane("canvas", 2, 2);
     displayDepthMapShader = new Shader("shaders/DisplayDepthMap_vshader.glsl", "shaders/DisplayDepthMap_fshader.glsl");
 }

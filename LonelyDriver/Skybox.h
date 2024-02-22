@@ -15,6 +15,11 @@
 #include <string>
 #endif
 
+#ifndef __INCLUDE_STB_IMAGE__
+#define __INCLUDE_STB_IMAGE__
+#include "stb_image.h"
+#endif
+
 #include "Drawable.h"
 class Shader;
 

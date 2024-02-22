@@ -28,8 +28,17 @@ void main()
     vec2 t0 = (t01 - t00) * u + t00;
     vec2 t1 = (t11 - t10) * u + t10;
     TexCoord = (t1 - t0) * v + t0;
-    float gamma = 1.0f;
-    Height = pow(texture(heightMap, TexCoord).x, float(1.0 / gamma)) * 64.f - 8.f;
+
+    float heights = 0.0;
+    for (int i = -1; i < 2; i++)
+    {
+        for (int j = -1; j < 2; j++)
+        {
+            heights += texture(heightMap, (TexCoord + i * 0.002 + j * 0.002)).x; // TODO: use better to multi-sample heightmap
+        }
+    }
+    Height = (heights / 9.0) * 256.f - 10.f;
+    // Height = texture(heightMap, TexCoord).x * 256.f - 10.f; // range -10~246
 
     vec4 p00 = gl_in[0].gl_Position;
     vec4 p01 = gl_in[1].gl_Position;

@@ -16,6 +16,11 @@
 #include <string>
 #endif
 
+#ifndef __INCLUDE_STB_IMAGE__
+#define __INCLUDE_STB_IMAGE__
+#include "stb_image.h"
+#endif
+
 #include "Box.h"
 #include "Model.h"
 #include "Physics.h"

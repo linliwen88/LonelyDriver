@@ -4,6 +4,11 @@
 #include <glm/glm.hpp>
 #endif
 
+#ifndef __INCLUDE_STB_IMAGE__
+#define __INCLUDE_STB_IMAGE__
+#include "stb_image.h"
+#endif
+
 #ifndef __INCLUDE_STRING__
 #define __INCLUDE_STRING__
 #include <string>
